@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IO DIA | Generative AI & LLMs Certification Textbook</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --nvidia-green: #76B900;
+            --nvidia-green-dark: #5A8F00;
+            --nvidia-green-light: #8ED100;
+            --nvidia-black: #1A1A1A;
+            --nvidia-dark: #242424;
+            --nvidia-gray: #2D2D2D;
+            --nvidia-text: #E8E8E8;
+            --nvidia-text-dim: #A0A0A0;
+            --accent-blue: #00D4FF;
+            --accent-purple: #7B61FF;
+            --accent-orange: #FF6B35;
+            --accent-pink: #FF3CAC;
+            --warning-yellow: #FFD93D;
+            --success-green: #4ADE80;
+            --error-red: #EF4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--nvidia-black);
+            color: var(--nvidia-text);
+            line-height: 1.7;
+        }
+        /* Background */
+        .bg-animation {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: radial-gradient(ellipse at 20% 20%, rgba(118,185,0,0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(0,212,255,0.05) 0%, transparent 50%);
+        }
+        .grid-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background-image: linear-gradient(rgba(118,185,0,0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(118,185,0,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        /* Header */
+        .header {
+            position: fixed; top: 0; left: 0; right: 0; height: 70px;
+            background: rgba(26,26,26,0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(118,185,0,0.2);
+            z-index: 1000; display: flex; align-items: center;
+            justify-content: space-between; padding: 0 30px;
+        }
+        .logo-section { display: flex; align-items: center; gap: 20px; }
+        .io-dia-logo { display: flex; align-items: center; gap: 10px; }
+        .tornado-icon { filter: drop-shadow(0 0 8px rgba(118,185,0,0.5)); }
+        .io-dia-text { 
+            font-size: 1.6rem; font-weight: 800; 
+            background: linear-gradient(135deg, #8ED100 0%, #76B900 50%, #5A8F00 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+        }
+        .book-title {
+            font-size: 1rem; font-weight: 600; padding-left: 20px;
+            border-left: 2px solid var(--nvidia-green);
+        }
+        .header-nav { display: flex; gap: 8px; }
+        .nav-btn {
+            padding: 10px 20px; background: transparent;
+            border: 1px solid rgba(118,185,0,0.3); border-radius: 8px;
+            color: var(--nvidia-text); font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem; cursor: pointer; transition: 0.2s;
+        }
+        .nav-btn:hover { background: rgba(118,185,0,0.1); border-color: var(--nvidia-green); }
+        /* Progress */
+        .reading-progress {
+            position: fixed; top: 70px; left: 320px; right: 0; height: 3px;
+            background: rgba(118,185,0,0.2); z-index: 999;
+        }
+        .reading-progress-bar {
+            height: 100%; background: linear-gradient(90deg, var(--nvidia-green), var(--accent-blue));
+            width: 0%; transition: width 0.1s;
+        }
+        /* Sidebar */
+        .sidebar {
+            position: fixed; left: 0; top: 70px; width: 320px;
+            height: calc(100vh - 70px); background: rgba(36,36,36,0.98);
+            border-right: 1px solid rgba(118,185,0,0.15);
+            overflow-y: auto; z-index: 900; transition: transform 0.3s;
+        }
+        .sidebar.collapsed { transform: translateX(-100%); }
+        .sidebar-header { padding: 24px; border-bottom: 1px solid rgba(118,185,0,0.1); }
+        .sidebar-search {
+            width: 100%; padding: 12px 16px; background: var(--nvidia-gray);
+            border: 1px solid rgba(118,185,0,0.2); border-radius: 8px;
+            color: var(--nvidia-text); font-family: 'Outfit', sans-serif; outline: none;
+        }
+        .sidebar-search:focus { border-color: var(--nvidia-green); }
+        .toc-section { padding: 16px; }
+        .toc-unit { margin-bottom: 8px; }
+        .toc-unit-header {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            background: rgba(118,185,0,0.08); border-radius: 8px; cursor: pointer;
+        }
+        .toc-unit-header:hover { background: rgba(118,185,0,0.15); }
+        .toc-unit-number {
+            width: 28px; height: 28px; background: var(--nvidia-green);
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 0.75rem; font-weight: 700;
+            color: var(--nvidia-black);
+        }
+        .toc-unit-title { flex: 1; font-weight: 600; font-size: 0.9rem; }
+        .toc-chapters { display: none; padding: 8px 0 8px 24px; }
+        .toc-unit.expanded .toc-chapters { display: block; }
+        .toc-chapter {
+            display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+            border-radius: 6px; cursor: pointer; font-size: 0.85rem;
+            color: var(--nvidia-text-dim); transition: 0.2s;
+        }
+        .toc-chapter:hover { background: rgba(118,185,0,0.1); color: var(--nvidia-text); }
+        .toc-chapter.active { background: rgba(118,185,0,0.2); color: var(--nvidia-green); }
+        .toc-chapter-num { font-weight: 600; color: var(--nvidia-green); min-width: 24px; }
+        /* Main Content */
+        .main-content {
+            margin-left: 320px; margin-top: 70px; min-height: calc(100vh - 70px);
+        }
+        .content-wrapper { max-width: 1000px; margin: 0 auto; padding: 60px 40px; }
+        /* Chapter Header */
+        .chapter-header { margin-bottom: 60px; }
+        .chapter-meta { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+        .chapter-number {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 60px; height: 60px; background: var(--nvidia-green);
+            border-radius: 12px; font-size: 1.5rem; font-weight: 800;
+            color: var(--nvidia-black); box-shadow: 0 0 40px rgba(118,185,0,0.3);
+        }
+        .chapter-unit-badge {
+            padding: 6px 14px; background: rgba(118,185,0,0.15);
+            border: 1px solid rgba(118,185,0,0.3); border-radius: 20px;
+            font-size: 0.8rem; font-weight: 500; color: var(--nvidia-green);
+        }
+        .chapter-title {
+            font-size: 2.5rem; font-weight: 800; line-height: 1.2; margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--nvidia-text) 0%, var(--nvidia-green) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .chapter-subtitle { font-size: 1.25rem; color: var(--nvidia-text-dim); }
+        .chapter-objectives {
+            margin-top: 40px; padding: 24px;
+            background: rgba(118,185,0,0.08);
+            border-left: 4px solid var(--nvidia-green);
+            border-radius: 0 12px 12px 0;
+        }
+        .objectives-title {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 1rem; font-weight: 700; color: var(--nvidia-green); margin-bottom: 16px;
+        }
+        .objectives-list { list-style: none; }
+        .objectives-list li {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 8px 0; font-size: 0.95rem;
+        }
+        .objectives-list li::before { content: '✓'; color: var(--nvidia-green); font-weight: 700; }
+        /* Sections */
+        .section { margin-bottom: 60px; }
+        .section-title {
+            font-size: 1.75rem; font-weight: 700; margin-bottom: 24px;
+            padding-bottom: 12px; border-bottom: 2px solid rgba(118,185,0,0.3);
+            display: flex; align-items: center; gap: 12px;
+        }
+        .section-icon {
+            width: 32px; height: 32px; background: var(--nvidia-green);
+            border-radius: 6px; display: flex; align-items: center;
+            justify-content: center; font-size: 1rem;
+        }
+        .subsection-title {
+            font-size: 1.25rem; font-weight: 600;
+            margin: 32px 0 16px; color: var(--nvidia-green-light);
+        }
+        p { margin-bottom: 16px; font-size: 1.05rem; }
+        /* Callouts */
+        .callout {
+            padding: 24px; border-radius: 12px; margin: 24px 0;
+            border-left: 4px solid;
+        }
+        .callout-header {
+            display: flex; align-items: center; gap: 10px;
+            font-weight: 700; margin-bottom: 12px;
+        }
+        .callout.tip { background: rgba(118,185,0,0.1); border-color: var(--nvidia-green); }
+        .callout.tip .callout-header { color: var(--nvidia-green); }
+        .callout.exam { background: rgba(123,97,255,0.1); border-color: var(--accent-purple); }
+        .callout.exam .callout-header { color: var(--accent-purple); }
+        .callout.important { background: rgba(255,107,53,0.1); border-color: var(--accent-orange); }
+        .callout.important .callout-header { color: var(--accent-orange); }
+        .callout.warning { background: rgba(255,217,61,0.1); border-color: var(--warning-yellow); }
+        .callout.warning .callout-header { color: var(--warning-yellow); }
+        .callout.nvidia {
+            background: linear-gradient(135deg, rgba(118,185,0,0.15), rgba(0,212,255,0.1));
+            border-color: var(--nvidia-green);
+        }
+        .callout.nvidia .callout-header { color: var(--nvidia-green); }
+        .callout.definition { background: rgba(0,212,255,0.1); border-color: var(--accent-blue); }
+        .callout.definition .callout-header { color: var(--accent-blue); }
+        /* Code Blocks */
+        .code-container {
+            margin: 24px 0; border-radius: 12px; overflow: hidden;
+            background: #0D0D0D; border: 1px solid rgba(118,185,0,0.2);
+        }
+        .code-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; background: rgba(118,185,0,0.1);
+            border-bottom: 1px solid rgba(118,185,0,0.2);
+        }
+        .code-lang { font-size: 0.85rem; font-weight: 600; color: var(--nvidia-green); }
+        .code-filename { font-size: 0.8rem; color: var(--nvidia-text-dim); font-family: 'JetBrains Mono'; }
+        .copy-btn {
+            padding: 6px 12px; background: rgba(118,185,0,0.2);
+            border: 1px solid rgba(118,185,0,0.3); border-radius: 6px;
+            color: var(--nvidia-green); font-size: 0.8rem; cursor: pointer;
+        }
+        .copy-btn:hover { background: var(--nvidia-green); color: var(--nvidia-black); }
+        .copy-btn.copied { background: var(--success-green); border-color: var(--success-green); }
+        .code-block {
+            padding: 20px; overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem; line-height: 1.6;
+        }
+        .code-block code { display: block; white-space: pre; }
+        .token-keyword { color: #FF79C6; }
+        .token-string { color: #F1FA8C; }
+        .token-number { color: #BD93F9; }
+        .token-comment { color: #6272A4; font-style: italic; }
+        .token-function { color: #50FA7B; }
+        .token-class { color: #8BE9FD; }
+        .token-type { color: #8BE9FD; }
+        .token-builtin { color: #8BE9FD; }
+        /* Diagrams */
+        .diagram-container {
+            margin: 32px 0; padding: 32px;
+            background: rgba(26,26,26,0.8);
+            border: 1px solid rgba(118,185,0,0.2);
+            border-radius: 16px;
+        }
+        .diagram-title {
+            font-size: 1rem; font-weight: 600; color: var(--nvidia-green);
+            margin-bottom: 24px; text-align: center;
+        }
+        .diagram-caption {
+            font-size: 0.9rem; color: var(--nvidia-text-dim);
+            text-align: center; margin-top: 16px; font-style: italic;
+        }
+        /* Flow Diagrams */
+        .flow-diagram {
+            display: flex; align-items: center; justify-content: center;
+            gap: 12px; flex-wrap: wrap; padding: 20px;
+        }
+        .flow-node {
+            padding: 16px 24px;
+            background: linear-gradient(135deg, rgba(118,185,0,0.2), rgba(118,185,0,0.1));
+            border: 2px solid var(--nvidia-green); border-radius: 12px;
+            font-weight: 600; font-size: 0.9rem; text-align: center;
+        }
+        .flow-node:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(118,185,0,0.3); }
+        .flow-node.highlight { background: var(--nvidia-green); color: var(--nvidia-black); }
+        .flow-arrow { color: var(--nvidia-green); font-size: 1.5rem; }
+        /* Timeline */
+        .timeline { position: relative; padding: 20px 0; }
+        .timeline::before {
+            content: ''; position: absolute; left: 20px; top: 0; bottom: 0;
+            width: 2px; background: linear-gradient(180deg, var(--nvidia-green), var(--accent-blue));
+        }
+        .timeline-item { position: relative; padding-left: 60px; margin-bottom: 32px; }
+        .timeline-dot {
+            position: absolute; left: 12px; top: 4px;
+            width: 18px; height: 18px; background: var(--nvidia-green);
+            border-radius: 50%; border: 3px solid var(--nvidia-black);
+        }
+        .timeline-year { font-weight: 700; color: var(--nvidia-green); margin-bottom: 4px; }
+        .timeline-title { font-weight: 600; margin-bottom: 4px; }
+        .timeline-desc { font-size: 0.9rem; color: var(--nvidia-text-dim); }
+        /* Stats Grid */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px; margin: 24px 0;
+        }
+        .stat-card {
+            padding: 24px; background: rgba(118,185,0,0.1);
+            border: 1px solid rgba(118,185,0,0.2); border-radius: 12px; text-align: center;
+        }
+        .stat-card:hover { transform: translateY(-4px); }
+        .stat-value { font-size: 2.5rem; font-weight: 800; color: var(--nvidia-green); }
+        .stat-label { font-size: 0.85rem; color: var(--nvidia-text-dim); margin-top: 8px; }
+        /* Comparison Grid */
+        .comparison-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px; margin: 24px 0;
+        }
+        .comparison-card {
+            padding: 24px; background: rgba(26,26,26,0.8);
+            border: 2px solid var(--nvidia-gray); border-radius: 16px;
+        }
+        .comparison-card:hover { border-color: var(--nvidia-green); }
+        .comparison-card.recommended {
+            border-color: var(--nvidia-green); background: rgba(118,185,0,0.1);
+        }
+        .comparison-badge {
+            display: inline-block; padding: 4px 12px; background: var(--nvidia-green);
+            color: var(--nvidia-black); font-size: 0.75rem; font-weight: 700;
+            border-radius: 12px; margin-bottom: 12px;
+        }
+        .comparison-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; }
+        .comparison-desc { font-size: 0.9rem; color: var(--nvidia-text-dim); margin-bottom: 16px; }
+        .comparison-features { list-style: none; }
+        .comparison-features li {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 0; font-size: 0.9rem;
+        }
+        .comparison-features li::before { content: '✓'; color: var(--nvidia-green); font-weight: 700; }
+        /* Tables */
+        .table-container {
+            margin: 24px 0; overflow-x: auto; border-radius: 12px;
+            border: 1px solid rgba(118,185,0,0.2);
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        th {
+            background: rgba(118,185,0,0.15); padding: 14px 16px; text-align: left;
+            font-weight: 600; color: var(--nvidia-green);
+            border-bottom: 2px solid var(--nvidia-green);
+        }
+        td { padding: 14px 16px; border-bottom: 1px solid rgba(118,185,0,0.1); }
+        tr:hover { background: rgba(118,185,0,0.05); }
+        tr.highlight { background: rgba(118,185,0,0.1); }
+        /* Formula */
+        .formula {
+            display: block; padding: 24px; margin: 24px 0;
+            background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.3);
+            border-radius: 12px; font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem; text-align: center; color: var(--accent-blue);
+        }
+        .formula-label {
+            display: block; font-size: 0.8rem; color: var(--nvidia-text-dim);
+            margin-bottom: 10px; font-family: 'Outfit', sans-serif;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+        }
+        /* Memory Aid */
+        .memory-aid {
+            margin: 32px 0; padding: 24px;
+            background: linear-gradient(135deg, rgba(255,60,172,0.1), rgba(123,97,255,0.1));
+            border: 1px solid rgba(255,60,172,0.3); border-radius: 16px;
+        }
+        .memory-aid-header {
+            display: flex; align-items: center; gap: 10px;
+            font-weight: 700; color: var(--accent-pink); margin-bottom: 16px;
+        }
+        .mnemonic {
+            font-size: 1.5rem; font-weight: 800; text-align: center; padding: 20px;
+            background: rgba(0,0,0,0.3); border-radius: 12px; margin: 16px 0;
+        }
+        .mnemonic span { color: var(--nvidia-green); }
+        /* Chapter Summary */
+        .chapter-summary {
+            margin: 60px 0; padding: 32px;
+            background: linear-gradient(135deg, rgba(118,185,0,0.1), rgba(0,212,255,0.05));
+            border: 1px solid rgba(118,185,0,0.3); border-radius: 16px;
+        }
+        .summary-title {
+            font-size: 1.5rem; font-weight: 700; color: var(--nvidia-green);
+            margin-bottom: 20px; display: flex; align-items: center; gap: 12px;
+        }
+        .summary-points {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;
+        }
+        .summary-point {
+            display: flex; align-items: flex-start; gap: 12px; padding: 16px;
+            background: rgba(0,0,0,0.2); border-radius: 12px;
+        }
+        .summary-point-icon {
+            width: 24px; height: 24px; background: var(--nvidia-green);
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; flex-shrink: 0; color: var(--nvidia-black);
+            font-size: 0.8rem; font-weight: 700;
+        }
+        /* Quiz */
+        .quiz-container {
+            margin: 40px 0; padding: 32px;
+            background: linear-gradient(135deg, rgba(123,97,255,0.1), rgba(0,212,255,0.05));
+            border: 1px solid rgba(123,97,255,0.3); border-radius: 16px;
+        }
+        .quiz-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 24px;
+        }
+        .quiz-title {
+            display: flex; align-items: center; gap: 12px;
+            font-size: 1.25rem; font-weight: 700; color: var(--accent-purple);
+        }
+        .quiz-progress { font-size: 0.9rem; color: var(--nvidia-text-dim); }
+        .quiz-question { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; }
+        .quiz-options { display: flex; flex-direction: column; gap: 12px; }
+        .quiz-option {
+            display: flex; align-items: center; gap: 16px; padding: 16px 20px;
+            background: rgba(45,45,45,0.8); border: 2px solid rgba(118,185,0,0.2);
+            border-radius: 12px; cursor: pointer; transition: 0.2s;
+        }
+        .quiz-option:hover { border-color: var(--nvidia-green); background: rgba(118,185,0,0.1); }
+        .quiz-option.selected { border-color: var(--nvidia-green); background: rgba(118,185,0,0.15); }
+        .quiz-option.correct { border-color: var(--success-green); background: rgba(74,222,128,0.15); }
+        .quiz-option.incorrect { border-color: var(--error-red); background: rgba(239,68,68,0.15); }
+        .option-letter {
+            width: 32px; height: 32px; background: rgba(118,185,0,0.2);
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-weight: 700; font-size: 0.9rem;
+        }
+        .quiz-option.correct .option-letter { background: var(--success-green); color: var(--nvidia-black); }
+        .quiz-option.incorrect .option-letter { background: var(--error-red); color: white; }
+        .quiz-explanation {
+            margin-top: 20px; padding: 16px; background: rgba(118,185,0,0.1);
+            border-radius: 12px; display: none;
+        }
+        .quiz-explanation.show { display: block; }
+        .quiz-explanation-title { font-weight: 700; color: var(--nvidia-green); margin-bottom: 8px; }
+        .quiz-nav { display: flex; justify-content: space-between; margin-top: 24px; }
+        .quiz-btn {
+            padding: 12px 24px; background: var(--nvidia-green); border: none;
+            border-radius: 12px; color: var(--nvidia-black); font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem; font-weight: 600; cursor: pointer;
+        }
+        .quiz-btn:hover { transform: translateY(-2px); }
+        .quiz-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .quiz-btn.secondary {
+            background: transparent; border: 2px solid var(--nvidia-green);
+            color: var(--nvidia-green);
+        }
+        .quiz-score { text-align: center; padding: 40px; }
+        .score-display {
+            font-size: 4rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--nvidia-green), var(--accent-blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .score-label { font-size: 1.25rem; color: var(--nvidia-text-dim); margin-top: 8px; }
+        /* Chapter Navigation */
+        .chapter-nav {
+            display: flex; justify-content: space-between; margin-top: 60px;
+            padding-top: 40px; border-top: 1px solid rgba(118,185,0,0.2);
+        }
+        .chapter-nav-btn {
+            display: flex; flex-direction: column; gap: 4px;
+            padding: 16px 24px; background: rgba(118,185,0,0.1);
+            border: 1px solid rgba(118,185,0,0.3); border-radius: 12px;
+            color: var(--nvidia-text); cursor: pointer; max-width: 45%;
+        }
+        .chapter-nav-btn:hover { background: rgba(118,185,0,0.2); border-color: var(--nvidia-green); }
+        .chapter-nav-label {
+            font-size: 0.8rem; color: var(--nvidia-text-dim);
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .chapter-nav-title { font-weight: 600; color: var(--nvidia-green); }
+        /* Glossary Modal */
+        .modal {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9); z-index: 2000;
+            display: none; align-items: center; justify-content: center; padding: 40px;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            width: 100%; max-width: 900px; max-height: 80vh;
+            background: var(--nvidia-dark); border: 1px solid rgba(118,185,0,0.3);
+            border-radius: 24px; overflow: hidden; display: flex; flex-direction: column;
+        }
+        .modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 24px; border-bottom: 1px solid rgba(118,185,0,0.2);
+        }
+        .modal-title { font-size: 1.5rem; font-weight: 700; color: var(--nvidia-green); }
+        .modal-close {
+            width: 40px; height: 40px; background: rgba(118,185,0,0.1);
+            border: 1px solid rgba(118,185,0,0.3); border-radius: 8px;
+            color: var(--nvidia-text); font-size: 1.5rem; cursor: pointer;
+        }
+        .modal-close:hover { background: var(--nvidia-green); color: var(--nvidia-black); }
+        .modal-search { padding: 20px 24px; border-bottom: 1px solid rgba(118,185,0,0.1); }
+        .modal-search input {
+            width: 100%; padding: 14px 20px; background: var(--nvidia-gray);
+            border: 1px solid rgba(118,185,0,0.2); border-radius: 12px;
+            color: var(--nvidia-text); font-family: 'Outfit', sans-serif; font-size: 1rem;
+        }
+        .modal-search input:focus { border-color: var(--nvidia-green); outline: none; }
+        .modal-list { flex: 1; overflow-y: auto; padding: 24px; }
+        .glossary-item {
+            padding: 20px; background: rgba(45,45,45,0.5);
+            border: 1px solid rgba(118,185,0,0.1); border-radius: 12px; margin-bottom: 16px;
+        }
+        .glossary-item:hover { border-color: var(--nvidia-green); }
+        .glossary-term { font-size: 1.1rem; font-weight: 700; color: var(--nvidia-green); margin-bottom: 8px; }
+        .glossary-definition { color: var(--nvidia-text-dim); font-size: 0.95rem; line-height: 1.6; }
+        .glossary-category {
+            display: inline-block; padding: 4px 10px; background: rgba(123,97,255,0.2);
+            border-radius: 12px; font-size: 0.75rem; font-weight: 500;
+            color: var(--accent-purple); margin-top: 10px;
+        }
+        /* GPU Animation */
+        .gpu-container { display: flex; justify-content: center; padding: 40px; perspective: 1000px; }
+        .gpu-chip {
+            width: 250px; height: 250px; position: relative;
+            transform-style: preserve-3d;
+            animation: gpuRotate 10s ease-in-out infinite;
+        }
+        @keyframes gpuRotate {
+            0%, 100% { transform: rotateX(10deg) rotateY(-10deg); }
+            50% { transform: rotateX(-5deg) rotateY(10deg); }
+        }
+        .gpu-die {
+            position: absolute; width: 100%; height: 100%;
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border: 3px solid var(--nvidia-green); border-radius: 16px;
+            display: grid; grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr); gap: 4px; padding: 16px;
+            box-shadow: 0 0 40px rgba(118,185,0,0.4);
+        }
+        .cuda-core {
+            background: var(--nvidia-green); border-radius: 2px;
+            opacity: 0.3; transition: opacity 0.2s;
+        }
+        .cuda-core.active { opacity: 1; box-shadow: 0 0 10px var(--nvidia-green); }
+        .gpu-label {
+            position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%);
+            font-weight: 700; color: var(--nvidia-green); text-transform: uppercase;
+            letter-spacing: 2px; font-size: 0.8rem; white-space: nowrap;
+        }
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .reading-progress { left: 0; }
+        }
+        @media (max-width: 768px) {
+            .content-wrapper { padding: 40px 20px; }
+            .chapter-title { font-size: 2rem; }
+            .flow-diagram { flex-direction: column; }
+            .flow-arrow { transform: rotate(90deg); }
+        }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--nvidia-dark); }
+        ::-webkit-scrollbar-thumb { background: rgba(118,185,0,0.3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(118,185,0,0.5); }
+        /* Key Term */
+        .key-term {
+            color: var(--nvidia-green); font-weight: 600; cursor: help;
+            border-bottom: 1px dashed var(--nvidia-green);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="grid-overlay"></div>
+    
+    <header class="header">
+        <div class="logo-section">
+            <div class="io-dia-logo">
+                <svg class="tornado-icon" viewBox="0 0 40 40" width="36" height="36">
+                    <defs>
+                        <linearGradient id="tornadoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#8ED100"/>
+                            <stop offset="50%" style="stop-color:#76B900"/>
+                            <stop offset="100%" style="stop-color:#5A8F00"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M20 2 C28 2 34 6 34 10 C34 12 32 14 28 15 C32 16 35 18 35 21 C35 24 31 26 26 27 C30 28 32 30 32 32 C32 35 27 37 22 37 C20 37 18 36.5 17 36 C15 38 14 39 12 39 C10 39 9 38 9 36 C9 34 11 32 14 31 C10 30 8 28 8 26 C8 23 12 21 17 20 C12 19 8 17 8 14 C8 11 13 9 19 9 C14 8 10 6 10 4 C10 3 12 2 15 2 Z" fill="url(#tornadoGrad)"/>
+                    <ellipse cx="20" cy="8" rx="8" ry="3" fill="none" stroke="#76B900" stroke-width="1.5" opacity="0.6">
+                        <animateTransform attributeName="transform" type="rotate" from="0 20 8" to="360 20 8" dur="3s" repeatCount="indefinite"/>
+                    </ellipse>
+                    <ellipse cx="20" cy="20" rx="6" ry="2.5" fill="none" stroke="#76B900" stroke-width="1.5" opacity="0.5">
+                        <animateTransform attributeName="transform" type="rotate" from="0 20 20" to="-360 20 20" dur="2.5s" repeatCount="indefinite"/>
+                    </ellipse>
+                    <ellipse cx="18" cy="32" rx="4" ry="2" fill="none" stroke="#76B900" stroke-width="1.5" opacity="0.4">
+                        <animateTransform attributeName="transform" type="rotate" from="0 18 32" to="360 18 32" dur="2s" repeatCount="indefinite"/>
+                    </ellipse>
+                </svg>
+                <span class="io-dia-text">IO DIA</span>
+            </div>
+            <span class="book-title">Generative AI & LLMs Certification Textbook</span>
+        </div>
+        <nav class="header-nav">
+            <button class="nav-btn" onclick="toggleSidebar()">☰ Contents</button>
+            <button class="nav-btn" onclick="openGlossary()">📖 Glossary</button>
+            <button class="nav-btn" onclick="scrollToQuiz()">📝 Quiz</button>
+        </nav>
+    </header>
+
+    <div class="reading-progress">
+        <div class="reading-progress-bar" id="progress-bar"></div>
+    </div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <input type="text" class="sidebar-search" placeholder="🔍 Search chapters..." oninput="filterTOC(this.value)">
+        </div>
+        <div class="toc-section" id="toc"></div>
+    </aside>
+
+    <main class="main-content">
+        <div class="content-wrapper" id="content"></div>
+    </main>
+
+    <div class="modal" id="glossary-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">📖 AI & LLM Glossary</h2>
+                <button class="modal-close" onclick="closeGlossary()">×</button>
+            </div>
+            <div class="modal-search">
+                <input type="text" placeholder="Search terms..." oninput="filterGlossary(this.value)">
+            </div>
+            <div class="modal-list" id="glossary-list"></div>
+        </div>
+    </div>
+
+    <script>
+        // ===== TEXTBOOK DATA =====
+        const textbookData = {
+            units: [
+                { id: 1, title: "Foundations of Generative AI", chapters: [
+                    { id: 1, title: "Introduction to Generative AI", subtitle: "Understanding AI that creates" },
+                    { id: 2, title: "NVIDIA AI Platform Overview", subtitle: "Hardware and software ecosystem" },
+                    { id: 3, title: "Transformer Architecture", subtitle: "The foundation of modern AI" },
+                    { id: 4, title: "Large Language Models", subtitle: "Architecture and capabilities" }
+                ]},
+                { id: 2, title: "Prompt Engineering", chapters: [
+                    { id: 5, title: "Prompt Design Principles", subtitle: "Crafting effective prompts" },
+                    { id: 6, title: "Advanced Prompting Techniques", subtitle: "Chain-of-thought and beyond" },
+                    { id: 7, title: "Working with NVIDIA NIM", subtitle: "API integration" }
+                ]},
+                { id: 3, title: "RAG Systems", chapters: [
+                    { id: 8, title: "RAG Architecture Fundamentals", subtitle: "Retrieval-augmented generation" },
+                    { id: 9, title: "Vector Databases & Embeddings", subtitle: "Storing and searching knowledge" },
+                    { id: 10, title: "Production RAG Pipelines", subtitle: "Building scalable systems" }
+                ]},
+                { id: 4, title: "AI Agents", chapters: [
+                    { id: 11, title: "Agent Fundamentals", subtitle: "Building autonomous AI" },
+                    { id: 12, title: "Advanced Agent Architectures", subtitle: "Multi-agent orchestration" }
+                ]},
+                { id: 5, title: "Multimodal AI", chapters: [
+                    { id: 13, title: "Vision-Language Models", subtitle: "Understanding images and text" },
+                    { id: 14, title: "Diffusion Models", subtitle: "Image generation" },
+                    { id: 15, title: "Audio & Speech Processing", subtitle: "Voice AI systems" }
+                ]},
+                { id: 6, title: "Deployment & Operations", chapters: [
+                    { id: 16, title: "NVIDIA NIM Deployment", subtitle: "Production inference" },
+                    { id: 17, title: "Optimization & Scaling", subtitle: "Performance and efficiency" }
+                ]},
+                { id: 7, title: "Industry Applications", chapters: [
+                    { id: 18, title: "AI for Cybersecurity", subtitle: "Threat detection" },
+                    { id: 19, title: "Crypto & Blockchain Analytics", subtitle: "Web3 AI applications" },
+                    { id: 20, title: "Metaverse & 3D AI", subtitle: "Spatial computing" }
+                ]},
+                { id: 8, title: "Certification Prep", chapters: [
+                    { id: 21, title: "Integration Project", subtitle: "Building a complete platform" },
+                    { id: 22, title: "Exam Preparation", subtitle: "Review and practice tests" }
+                ]}
+            ]
+        };
+
+        // ===== GLOSSARY DATA =====
+        const glossaryData = [
+            { term: "Attention Mechanism", definition: "Allows neural networks to focus on relevant input parts. Key innovation enabling Transformers.", category: "Architecture" },
+            { term: "Autoregressive Model", definition: "Generates output sequentially, each token depending on previous. GPT, LLaMA, Mistral.", category: "Models" },
+            { term: "BPE", definition: "Byte-Pair Encoding - tokenization algorithm merging frequent character pairs.", category: "NLP" },
+            { term: "Chain-of-Thought", definition: "Prompting technique encouraging step-by-step reasoning.", category: "Prompting" },
+            { term: "Chunking", definition: "Dividing documents into segments for RAG embedding and retrieval.", category: "RAG" },
+            { term: "Context Window", definition: "Maximum tokens an LLM can process in single input.", category: "Architecture" },
+            { term: "CUDA", definition: "NVIDIA's parallel computing platform for GPU computation.", category: "Hardware" },
+            { term: "Diffusion Model", definition: "Creates outputs by reversing gradual noising process.", category: "Models" },
+            { term: "Embedding", definition: "Dense vector representation where similar items cluster.", category: "NLP" },
+            { term: "Few-shot Learning", definition: "Providing examples in prompt for model guidance.", category: "Prompting" },
+            { term: "Fine-tuning", definition: "Adapting pre-trained model with task-specific data.", category: "Training" },
+            { term: "Flash Attention", definition: "IO-aware attention, 2-4x faster, O(n) memory.", category: "Optimization" },
+            { term: "Function Calling", definition: "LLMs generating structured tool invocations.", category: "Agents" },
+            { term: "GAN", definition: "Generator vs discriminator networks competing.", category: "Models" },
+            { term: "Generative AI", definition: "AI creating new content from learned patterns.", category: "Fundamentals" },
+            { term: "GQA", definition: "Grouped-Query Attention - groups share K/V heads.", category: "Architecture" },
+            { term: "GPU", definition: "Parallel processing hardware for AI workloads.", category: "Hardware" },
+            { term: "Hallucination", definition: "AI generating incorrect but plausible information.", category: "Challenges" },
+            { term: "HNSW", definition: "Graph-based approximate nearest neighbor algorithm.", category: "RAG" },
+            { term: "KV Cache", definition: "Cached attention keys/values for efficiency.", category: "Optimization" },
+            { term: "LLM", definition: "Large Language Model - billions of parameters.", category: "Models" },
+            { term: "LoRA", definition: "Low-Rank Adaptation for efficient fine-tuning.", category: "Training" },
+            { term: "MHA", definition: "Multi-Head Attention - separate K/V per head.", category: "Architecture" },
+            { term: "MQA", definition: "Multi-Query Attention - shared K/V, max efficiency.", category: "Architecture" },
+            { term: "NVIDIA NIM", definition: "Optimized inference microservices.", category: "NVIDIA" },
+            { term: "Perplexity", definition: "Metric for model prediction quality.", category: "Metrics" },
+            { term: "Prompt Engineering", definition: "Designing inputs for optimal model outputs.", category: "Prompting" },
+            { term: "Quantization", definition: "Reducing precision for efficiency.", category: "Optimization" },
+            { term: "RAG", definition: "Retrieval-Augmented Generation.", category: "RAG" },
+            { term: "ReAct", definition: "Reasoning + Acting agent framework.", category: "Agents" },
+            { term: "Reranking", definition: "Re-scoring retrieved results.", category: "RAG" },
+            { term: "RoPE", definition: "Rotary Position Embedding.", category: "Architecture" },
+            { term: "Self-Attention", definition: "Q, K, V from same sequence.", category: "Architecture" },
+            { term: "Softmax", definition: "Converts to probabilities summing to 1.", category: "Math" },
+            { term: "Temperature", definition: "Generation randomness control.", category: "Generation" },
+            { term: "TensorRT-LLM", definition: "NVIDIA's LLM optimization library.", category: "NVIDIA" },
+            { term: "Token", definition: "Basic text processing unit.", category: "NLP" },
+            { term: "Transformer", definition: "Self-attention neural architecture.", category: "Architecture" },
+            { term: "VAE", definition: "Variational Autoencoder.", category: "Models" },
+            { term: "Vector Database", definition: "Database for embedding storage/search.", category: "RAG" },
+            { term: "Zero-shot", definition: "Task performance without examples.", category: "Capabilities" }
+        ];
+
+        // ===== QUIZ DATA =====
+        const quizData = {
+            1: [
+                { q: "What distinguishes generative from discriminative AI?", opts: ["Speed", "Creates vs classifies", "Data needs", "No difference"], ans: 1, exp: "Generative creates new content; discriminative classifies existing data." },
+                { q: "When was the Transformer introduced?", opts: ["2014", "2015", "2017", "2020"], ans: 2, exp: "2017 - 'Attention Is All You Need' paper." },
+                { q: "What is NVIDIA NIM?", opts: ["Neural Module", "Inference Microservices", "Network Models", "Interface Manager"], ans: 1, exp: "NVIDIA Inference Microservices for optimized AI deployment." },
+                { q: "Which model uses iterative denoising?", opts: ["Autoregressive", "GAN", "Diffusion", "VAE"], ans: 2, exp: "Diffusion models denoise random noise into outputs." },
+                { q: "Why GPUs for AI?", opts: ["Clock speed", "Cache", "Parallel processing", "Power"], ans: 2, exp: "Thousands of parallel cores for matrix operations." }
+            ],
+            2: [
+                { q: "H100 CUDA cores?", opts: ["8,192", "10,752", "16,896", "24,576"], ans: 2, exp: "H100 has 16,896 CUDA cores." },
+                { q: "What is TensorRT-LLM?", opts: ["Training", "Inference optimization", "Database", "Monitor"], ans: 1, exp: "Optimizes LLM inference on NVIDIA GPUs." },
+                { q: "NGC Catalog provides?", opts: ["Hardware", "Pre-trained models", "Cooling", "Power"], ans: 1, exp: "Containers and pre-trained AI models." }
+            ],
+            3: [
+                { q: "Why √d_k scaling?", opts: ["Speed", "Prevent vanishing gradients", "Memory", "Accuracy"], ans: 1, exp: "Prevents large dot products causing gradient issues." },
+                { q: "LLaMA 3 attention type?", opts: ["MHA", "MQA", "GQA", "Flash"], ans: 2, exp: "GQA balances efficiency and quality." },
+                { q: "Query (Q) represents?", opts: ["Storage", "Search vector", "Labels", "Output"], ans: 1, exp: "What the current position is looking for." },
+                { q: "MHA stands for?", opts: ["Maximum Head", "Multi-Head Attention", "Matrix Head", "Modular Head"], ans: 1, exp: "Multi-Head Attention with separate K/V per head." }
+            ],
+            4: [
+                { q: "GPT architecture type?", opts: ["Encoder-only", "Decoder-only", "Encoder-decoder", "Diffusion"], ans: 1, exp: "GPT uses decoder-only for autoregressive generation." },
+                { q: "GPT-4 Turbo context?", opts: ["4K", "32K", "128K", "1M"], ans: 2, exp: "Supports up to 128K tokens." },
+                { q: "LLaMA tokenization?", opts: ["Word", "Character", "BPE", "WordPiece"], ans: 2, exp: "Uses Byte-Pair Encoding." }
+            ],
+            5: [
+                { q: "Prompt engineering goal?", opts: ["Shorter prompts", "Elicit desired outputs", "Reduce cost", "Faster training"], ans: 1, exp: "Design inputs for optimal model outputs." },
+                { q: "Good system prompt has?", opts: ["Length", "Clear role/context", "Jargon", "No examples"], ans: 1, exp: "Clear role, context, and expectations." },
+                { q: "Output formatting is?", opts: ["Bold text", "Response structure", "Compression", "Colors"], ans: 1, exp: "Specifying how model should structure response." }
+            ],
+            6: [
+                { q: "Chain-of-thought is?", opts: ["API linking", "Step-by-step reasoning", "Model chaining", "Fine-tuning"], ans: 1, exp: "Encourages showing reasoning steps." },
+                { q: "Zero-shot examples?", opts: ["Zero", "One", "Few", "Many"], ans: 0, exp: "Uses only instructions, no examples." },
+                { q: "Self-consistency?", opts: ["Same prompt", "Multiple paths + voting", "Self-correct", "Format"], ans: 1, exp: "Samples multiple reasoning paths and votes." }
+            ],
+            7: [
+                { q: "NIM API format?", opts: ["REST only", "GraphQL", "OpenAI-compatible", "gRPC"], ans: 2, exp: "Uses OpenAI-compatible APIs." },
+                { q: "Streaming is?", opts: ["Video", "Real-time tokens", "Compression", "Batching"], ans: 1, exp: "Delivers tokens as generated." },
+                { q: "Error handling?", opts: ["Ignore", "Exponential backoff", "Fail fast", "Log only"], ans: 1, exp: "Retry with exponential backoff." }
+            ],
+            8: [
+                { q: "RAG stands for?", opts: ["Random Access", "Retrieval-Augmented Generation", "Recursive AI", "Ranked Answer"], ans: 1, exp: "Combines retrieval with generation." },
+                { q: "RAG vs fine-tuning?", opts: ["Faster", "No retraining for updates", "Better math", "Smaller"], ans: 1, exp: "Knowledge updates without retraining." },
+                { q: "RAG main benefit?", opts: ["Speed", "Reduced hallucinations", "Context", "Compute"], ans: 1, exp: "Grounds responses in retrieved facts." }
+            ],
+            9: [
+                { q: "OpenAI embedding dims?", opts: ["768", "1024", "1536", "4096"], ans: 2, exp: "text-embedding-3-small uses 1536 dimensions." },
+                { q: "HNSW algorithm?", opts: ["Binary search", "Graph ANN", "Linear scan", "Tree"], ans: 1, exp: "Hierarchical graphs for nearest neighbors." },
+                { q: "Cosine similarity?", opts: ["Distance", "Angle between vectors", "Sum", "Product"], ans: 1, exp: "Measures angle between embeddings." }
+            ],
+            10: [
+                { q: "Chunking is?", opts: ["Compression", "Splitting documents", "Caching", "Batching"], ans: 1, exp: "Divides documents for embedding." },
+                { q: "Reranking is?", opts: ["Date sort", "Re-scoring results", "Deduplication", "Query expansion"], ans: 1, exp: "Re-scores for better relevance." },
+                { q: "Hybrid search?", opts: ["Cloud+local", "Keyword+semantic", "Fast+slow", "Text+image"], ans: 1, exp: "Combines BM25 and semantic search." }
+            ],
+            11: [
+                { q: "ReAct framework?", opts: ["React.js", "Reasoning+Acting", "Reactive", "Real-time"], ans: 1, exp: "Interleaves reasoning and actions." },
+                { q: "Function calling?", opts: ["Python", "LLM tool invocation", "Callbacks", "Events"], ans: 1, exp: "LLMs generate structured tool calls." },
+                { q: "Agent memory stores?", opts: ["Errors only", "Conversation+context", "Success only", "Weights"], ans: 1, exp: "Tracks history and context." }
+            ],
+            12: [
+                { q: "Supervisor agent?", opts: ["Human", "Coordinates agents", "Security", "Training"], ans: 1, exp: "Routes tasks and manages agents." },
+                { q: "Agent handoff?", opts: ["Hardware", "Control transfer", "Escalation", "Model switch"], ans: 1, exp: "Transfers control between agents." },
+                { q: "Multi-agent framework?", opts: ["TensorFlow", "LangGraph", "PyTorch", "Keras"], ans: 1, exp: "LangGraph for agent orchestration." }
+            ],
+            13: [
+                { q: "VLM stands for?", opts: ["Virtual Language", "Vision-Language Model", "Vector Learning", "Visual Logic"], ans: 1, exp: "Processes images and text together." },
+                { q: "CLIP is for?", opts: ["Video", "Image-text matching", "Audio", "3D"], ans: 1, exp: "Learns aligned image-text representations." },
+                { q: "GPT-4V can?", opts: ["Generate images", "Understand images+text", "Edit video", "Create 3D"], ans: 1, exp: "Processes images with text." }
+            ],
+            14: [
+                { q: "Diffusion works by?", opts: ["Direct", "Iterative denoising", "Adversarial", "Encoding"], ans: 1, exp: "Learns to denoise step by step." },
+                { q: "ControlNet is?", opts: ["Versioning", "Conditioning for diffusion", "Security", "Controller"], ans: 1, exp: "Adds spatial conditioning." },
+                { q: "CFG means?", opts: ["Config File", "Classifier-Free Guidance", "Conditional Gate", "Context Frame"], ans: 1, exp: "Balances conditioned/unconditioned generation." }
+            ],
+            15: [
+                { q: "NVIDIA Riva is?", opts: ["GPU", "Speech AI platform", "Training", "Data center"], ans: 1, exp: "Speech recognition and synthesis." },
+                { q: "ASR is?", opts: ["Recovery", "Speech Recognition", "Router", "Rendering"], ans: 1, exp: "Converts speech to text." },
+                { q: "TTS is?", opts: ["Test Suite", "Text-to-Speech", "Transfer", "Time"], ans: 1, exp: "Synthesizes speech from text." }
+            ],
+            16: [
+                { q: "NIM container is?", opts: ["Storage", "Inference package", "VM", "Repo"], ans: 1, exp: "Optimized inference service package." },
+                { q: "Common orchestrator?", opts: ["Swarm", "Kubernetes", "Mesos", "Nomad"], ans: 1, exp: "K8s manages NIM deployments." },
+                { q: "Health checking?", opts: ["Wellness", "Service monitoring", "Validation", "Security"], ans: 1, exp: "Verifies service availability." }
+            ],
+            17: [
+                { q: "Quantization is?", opts: ["Enlarging", "Reducing precision", "Adding layers", "Increasing accuracy"], ans: 1, exp: "FP32→INT8 for efficiency." },
+                { q: "In-flight batching?", opts: ["Airplane", "Dynamic batching", "Pre-process", "Post-process"], ans: 1, exp: "Combines requests dynamically." },
+                { q: "KV cache is?", opts: ["Database", "Attention states", "K8s volumes", "Knowledge"], ans: 1, exp: "Cached attention keys/values." }
+            ],
+            18: [
+                { q: "NVIDIA Morpheus?", opts: ["Game", "Cybersecurity AI", "Image gen", "Chat"], ans: 1, exp: "Cybersecurity AI framework." },
+                { q: "LLMs detect?", opts: ["Physical", "Phishing+anomalies", "Hardware", "Weather"], ans: 1, exp: "Analyze logs, detect threats." },
+                { q: "Log analysis with AI?", opts: ["Storage", "Pattern+anomaly detection", "Compression", "Deletion"], ans: 1, exp: "Finds anomalies in security logs." }
+            ],
+            19: [
+                { q: "AI analyzes blockchain?", opts: ["Only BTC", "Transactions+contracts+patterns", "Only prices", "Only meta"], ans: 1, exp: "Full transaction and contract analysis." },
+                { q: "On-chain analytics?", opts: ["Mining", "Blockchain data analysis", "Nodes", "Consensus"], ans: 1, exp: "Extracts blockchain insights." },
+                { q: "LLMs help contracts by?", opts: ["Faster code", "Audit+explain", "Mining", "Storage"], ans: 1, exp: "Audit and explain contracts." }
+            ],
+            20: [
+                { q: "NVIDIA Omniverse?", opts: ["Console", "3D simulation platform", "Storage", "Training"], ans: 1, exp: "3D simulation and collaboration." },
+                { q: "Digital twin is?", opts: ["Server copy", "Virtual physical replica", "Backup", "Clone"], ans: 1, exp: "Virtual replicas for simulation." },
+                { q: "NeRF is?", opts: ["Toy", "Neural Radiance Fields", "Filter", "Reference"], ans: 1, exp: "Creates 3D from 2D using neural nets." }
+            ],
+            21: [
+                { q: "Integration project has?", opts: ["Only UI", "End-to-end system", "Only backend", "Only tests"], ans: 1, exp: "Combines multiple components." },
+                { q: "Testing importance?", opts: ["Requirement", "Reliability+correctness", "Code length", "Slowdown"], ans: 1, exp: "Verifies reliability." },
+                { q: "Documentation needed?", opts: ["None", "API+setup+architecture", "Comments only", "Manual only"], ans: 1, exp: "Complete coverage required." }
+            ],
+            22: [
+                { q: "Pass percentage?", opts: ["50%", "60%", "70%", "90%"], ans: 2, exp: "Most require 70%+." },
+                { q: "Best study strategy?", opts: ["Cram", "Hands-on+review", "Read once", "Skip tests"], ans: 1, exp: "Practice with review works best." },
+                { q: "During exam?", opts: ["Rush", "Read carefully, manage time", "Skip hard", "Random guess"], ans: 1, exp: "Careful reading and time management." }
+            ]
+        };
+
+        // ===== STATE =====
+        let currentChapter = 1;
+        let quizState = { currentQuestion: 0, answers: [], score: 0 };
+
+        // ===== INITIALIZATION =====
+        function init() {
+            generateTOC();
+            loadChapter(1);
+            renderGlossary();
+            window.addEventListener('scroll', updateProgress);
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeGlossary();
+                if (e.ctrlKey && e.key === 'ArrowRight') loadChapter(Math.min(currentChapter + 1, 22));
+                if (e.ctrlKey && e.key === 'ArrowLeft') loadChapter(Math.max(currentChapter - 1, 1));
+            });
+        }
+
+        function generateTOC() {
+            const toc = document.getElementById('toc');
+            toc.innerHTML = textbookData.units.map((unit, idx) => `
+                <div class="toc-unit ${idx === 0 ? 'expanded' : ''}" data-unit="${unit.id}">
+                    <div class="toc-unit-header" onclick="this.parentElement.classList.toggle('expanded')">
+                        <span class="toc-unit-number">${unit.id}</span>
+                        <span class="toc-unit-title">${unit.title}</span>
+                        <span style="margin-left:auto">▼</span>
+                    </div>
+                    <div class="toc-chapters">
+                        ${unit.chapters.map(ch => `
+                            <div class="toc-chapter ${ch.id === 1 ? 'active' : ''}" onclick="loadChapter(${ch.id})" data-chapter="${ch.id}">
+                                <span class="toc-chapter-num">${ch.id}</span>
+                                <span>${ch.title}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadChapter(num) {
+            currentChapter = num;
+            const content = document.getElementById('content');
+            const chapter = findChapter(num);
+            
+            content.innerHTML = generateChapterHTML(num, chapter);
+            
+            document.querySelectorAll('.toc-chapter').forEach(ch => {
+                ch.classList.toggle('active', parseInt(ch.dataset.chapter) === num);
+            });
+            
+            if (quizData[num]) {
+                quizState = { currentQuestion: 0, answers: [], score: 0 };
+                renderQuiz();
+            }
+            
+            if (num === 1 || num === 2) {
+                setTimeout(initGPUAnimation, 100);
+            }
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function findChapter(num) {
+            for (const unit of textbookData.units) {
+                const ch = unit.chapters.find(c => c.id === num);
+                if (ch) return { ...ch, unitId: unit.id, unitTitle: unit.title };
+            }
+            return { id: num, title: `Chapter ${num}`, subtitle: '', unitId: 1, unitTitle: '' };
+        }
+
+        function generateChapterHTML(num, chapter) {
+            const objectives = getObjectives(num);
+            const sections = getSections(num);
+            
+            return `
+                <article class="chapter" id="chapter-${num}">
+                    <div class="chapter-header">
+                        <div class="chapter-meta">
+                            <div class="chapter-number">${num}</div>
+                            <span class="chapter-unit-badge">Unit ${chapter.unitId}: ${chapter.unitTitle}</span>
+                        </div>
+                        <h1 class="chapter-title">${chapter.title}</h1>
+                        <p class="chapter-subtitle">${chapter.subtitle}</p>
+                        
+                        <div class="chapter-objectives">
+                            <div class="objectives-title">✓ Learning Objectives</div>
+                            <ul class="objectives-list">
+                                ${objectives.map(obj => `<li>${obj}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    ${sections}
+                    
+                    ${getSummary(num)}
+                    
+                    <section class="section">
+                        <h2 class="section-title"><span class="section-icon">📝</span>Knowledge Check</h2>
+                        <div class="quiz-container" id="quiz-container"></div>
+                    </section>
+                    
+                    <div class="chapter-nav">
+                        ${num > 1 ? `<div class="chapter-nav-btn" onclick="loadChapter(${num-1})">
+                            <span class="chapter-nav-label">← Previous</span>
+                            <span class="chapter-nav-title">Chapter ${num-1}</span>
+                        </div>` : '<div></div>'}
+                        ${num < 22 ? `<div class="chapter-nav-btn" onclick="loadChapter(${num+1})">
+                            <span class="chapter-nav-label">Next →</span>
+                            <span class="chapter-nav-title">Chapter ${num+1}</span>
+                        </div>` : '<div></div>'}
+                    </div>
+                </article>
+            `;
+        }
+
+        function getObjectives(num) {
+            const objectives = {
+                1: ["Define generative AI and distinguish from discriminative AI", "Trace AI evolution from neural networks to LLMs", "Understand NVIDIA's role in AI", "Identify generative model architectures", "Recognize emergent capabilities"],
+                2: ["Understand NVIDIA GPU architecture", "Navigate the AI software stack", "Compare GPU families", "Set up development environments", "Access NVIDIA AI services"],
+                3: ["Understand self-attention mathematically", "Identify Transformer components", "Compare MHA, MQA, GQA", "Implement attention in PyTorch", "Explain positional encoding"],
+                4: ["Understand LLM architecture", "Compare decoder vs encoder-decoder", "Analyze scaling laws", "Evaluate open vs proprietary models", "Understand tokenization"],
+                5: ["Apply prompt engineering principles", "Structure prompts optimally", "Use role-based prompting", "Implement output formatting", "Debug and iterate prompts"],
+                6: ["Implement chain-of-thought", "Apply few-shot and zero-shot", "Use tree-of-thoughts", "Design self-consistency", "Combine prompting methods"],
+                7: ["Connect to NVIDIA NIM", "Handle streaming responses", "Implement error handling", "Optimize API usage", "Build production apps"],
+                8: ["Understand why RAG improves accuracy", "Design RAG architecture", "Choose retrieval strategies", "Implement query processing", "Evaluate RAG performance"],
+                9: ["Understand embeddings", "Compare vector databases", "Implement similarity search", "Optimize indexing", "Handle model updates"],
+                10: ["Design chunking strategies", "Implement reranking", "Build hybrid search", "Handle multimodal content", "Monitor RAG performance"],
+                11: ["Define AI agents", "Implement ReAct framework", "Design tool interfaces", "Handle agent memory", "Build single-agent systems"],
+                12: ["Design multi-agent systems", "Implement communication protocols", "Handle complex workflows", "Build hierarchical agents", "Debug agent behavior"],
+                13: ["Understand VLM architectures", "Implement image understanding", "Handle document analysis", "Build visual QA systems", "Evaluate multimodal performance"],
+                14: ["Understand diffusion theory", "Implement text-to-image", "Use ControlNet", "Apply inpainting", "Fine-tune diffusion models"],
+                15: ["Implement speech-to-text", "Build TTS systems", "Handle real-time audio", "Design voice agents", "Use NVIDIA Riva"],
+                16: ["Deploy NIM containers", "Configure endpoints", "Handle scaling", "Implement monitoring", "Secure deployments"],
+                17: ["Apply quantization", "Implement batching", "Use TensorRT-LLM", "Profile inference", "Scale systems"],
+                18: ["Apply LLMs to threat detection", "Build log analysis", "Implement anomaly detection", "Use NVIDIA Morpheus", "Design SOC tools"],
+                19: ["Analyze blockchain data", "Build on-chain analytics", "Analyze smart contracts", "Design DeFi monitoring", "Apply crypto sentiment NLP"],
+                20: ["Understand 3D generation", "Use NVIDIA Omniverse", "Build digital twins", "Implement NeRF", "Design avatar systems"],
+                21: ["Design end-to-end systems", "Integrate NVIDIA services", "Build production apps", "Implement testing", "Document solutions"],
+                22: ["Review all topics", "Complete practice exams", "Address knowledge gaps", "Master exam strategies", "Prepare for hands-on"]
+            };
+            return objectives[num] || ["Complete chapter objectives"];
+        }
+
+        function getSections(num) {
+            if (num === 1) return getChapter1Content();
+            if (num === 3) return getChapter3Content();
+            if (num === 8) return getChapter8Content();
+            return getGenericContent(num);
+        }
+
+        function getChapter1Content() {
+            return `
+                <section class="section">
+                    <h2 class="section-title"><span class="section-icon">🎯</span>1.1 What is Generative AI?</h2>
+                    
+                    <p><strong class="key-term">Generative AI</strong> creates new content—text, images, audio, code—that mimics human creativity. Unlike traditional AI that classifies or predicts, generative AI produces entirely new outputs.</p>
+                    
+                    <div class="callout definition">
+                        <div class="callout-header">📘 Key Distinction</div>
+                        <p><strong>Discriminative AI</strong> learns P(Y|X) — "What is this?" → Classification</p>
+                        <p><strong>Generative AI</strong> learns P(X) — "What could this look like?" → Creation</p>
+                    </div>
+
+                    <h3 class="subsection-title">The AI Evolution Timeline</h3>
+                    
+                    <div class="diagram-container">
+                        <div class="diagram-title">🚀 The Generative AI Revolution</div>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-year">2014</div>
+                                <div class="timeline-title">GANs Invented</div>
+                                <div class="timeline-desc">Ian Goodfellow introduces Generative Adversarial Networks</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-year">2017</div>
+                                <div class="timeline-title">Transformer Architecture</div>
+                                <div class="timeline-desc">"Attention Is All You Need" revolutionizes AI</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-year">2020</div>
+                                <div class="timeline-title">GPT-3</div>
+                                <div class="timeline-desc">175B parameters demonstrate emergent abilities</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-year">2022-24</div>
+                                <div class="timeline-title">ChatGPT & Open-Weight Models</div>
+                                <div class="timeline-desc">LLaMA, Mistral drive enterprise adoption</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="callout exam">
+                        <div class="callout-header">🎯 Exam Focus</div>
+                        <p>Remember <strong>2017</strong> — the Transformer paper. This architecture underlies ALL modern LLMs: GPT, LLaMA, Mistral, Claude.</p>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <h2 class="section-title"><span class="section-icon">🔄</span>1.2 Types of Generative Models</h2>
+                    
+                    <div class="comparison-grid">
+                        <div class="comparison-card recommended">
+                            <span class="comparison-badge">Most Common for LLMs</span>
+                            <div class="comparison-title">Autoregressive</div>
+                            <div class="comparison-desc">Generates token by token, each dependent on previous</div>
+                            <ul class="comparison-features">
+                                <li>GPT, LLaMA, Mistral</li>
+                                <li>Best for text generation</li>
+                                <li>Sequential process</li>
+                            </ul>
+                        </div>
+                        <div class="comparison-card">
+                            <div class="comparison-title">Diffusion</div>
+                            <div class="comparison-desc">Iterative denoising from random noise</div>
+                            <ul class="comparison-features">
+                                <li>Stable Diffusion, DALL-E</li>
+                                <li>State-of-art images</li>
+                                <li>Controllable generation</li>
+                            </ul>
+                        </div>
+                        <div class="comparison-card">
+                            <div class="comparison-title">VAE</div>
+                            <div class="comparison-desc">Encode to latent space, decode back</div>
+                            <ul class="comparison-features">
+                                <li>Image compression</li>
+                                <li>Smooth interpolation</li>
+                                <li>Feature learning</li>
+                            </ul>
+                        </div>
+                        <div class="comparison-card">
+                            <div class="comparison-title">GAN</div>
+                            <div class="comparison-desc">Generator vs discriminator competition</div>
+                            <ul class="comparison-features">
+                                <li>StyleGAN, BigGAN</li>
+                                <li>High-fidelity outputs</li>
+                                <li>Fast inference</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="memory-aid">
+                        <div class="memory-aid-header">🧠 Memory Aid: "A-D-V-G"</div>
+                        <div class="mnemonic"><span>A</span>utoregressive → <span>D</span>iffusion → <span>V</span>AE → <span>G</span>AN</div>
+                        <p>Think: "<strong>A D</strong>eveloper <strong>V</strong>ery <strong>G</strong>ood" — ordered by current adoption!</p>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <h2 class="section-title"><span class="section-icon">⚡</span>1.3 NVIDIA's Role in AI</h2>
+                    
+                    <p>Modern AI wouldn't exist without NVIDIA. Their GPUs provide massive parallel computing for training trillion-parameter models.</p>
+
+                    <div class="callout nvidia">
+                        <div class="callout-header">🟢 NVIDIA Technology</div>
+                        <p>A single H100 GPU has <strong>16,896 CUDA cores</strong> performing parallel matrix operations, making it 1000x faster than CPUs for AI.</p>
+                    </div>
+
+                    <div class="diagram-container">
+                        <div class="diagram-title">⚡ GPU Parallel Processing Visualization</div>
+                        <div class="gpu-container">
+                            <div class="gpu-chip">
+                                <div class="gpu-die" id="gpu-die"></div>
+                                <div class="gpu-label">NVIDIA GPU • CUDA Cores</div>
+                            </div>
+                        </div>
+                        <p class="diagram-caption">Each cell = CUDA core group processing in parallel — watch them compute!</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-value">16,896</div><div class="stat-label">H100 CUDA Cores</div></div>
+                        <div class="stat-card"><div class="stat-value">80GB</div><div class="stat-label">HBM3 Memory</div></div>
+                        <div class="stat-card"><div class="stat-value">30×</div><div class="stat-label">Faster than A100</div></div>
+                        <div class="stat-card"><div class="stat-value">3.35TB/s</div><div class="stat-label">Memory Bandwidth</div></div>
+                    </div>
+
+                    <h3 class="subsection-title">The NVIDIA AI Stack</h3>
+                    
+                    <div class="diagram-container">
+                        <div class="diagram-title">NVIDIA AI Technology Stack</div>
+                        <div class="flow-diagram" style="flex-direction: column;">
+                            <div class="flow-node" style="background: rgba(255,107,53,0.2); border-color: var(--accent-orange);">🎯 Applications (NeMo, Riva)</div>
+                            <div class="flow-arrow" style="transform: rotate(90deg);">→</div>
+                            <div class="flow-node" style="background: rgba(0,212,255,0.2); border-color: var(--accent-blue);">🚀 NVIDIA NIM</div>
+                            <div class="flow-arrow" style="transform: rotate(90deg);">→</div>
+                            <div class="flow-node" style="background: rgba(123,97,255,0.2); border-color: var(--accent-purple);">⚙️ TensorRT-LLM</div>
+                            <div class="flow-arrow" style="transform: rotate(90deg);">→</div>
+                            <div class="flow-node">💻 CUDA / cuDNN</div>
+                            <div class="flow-arrow" style="transform: rotate(90deg);">→</div>
+                            <div class="flow-node highlight">🖥️ GPU Hardware (H100, A100)</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <h2 class="section-title"><span class="section-icon">💻</span>1.4 Your First AI Code</h2>
+                    
+                    <div class="code-container">
+                        <div class="code-header">
+                            <span class="code-lang">🐍 Python</span>
+                            <span class="code-filename">hello_nvidia_ai.py</span>
+                            <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+                        </div>
+                        <div class="code-block"><code><span class="token-comment"># NVIDIA NIM - Your First AI Application</span>
+<span class="token-keyword">import</span> requests
+
+<span class="token-comment"># Configuration</span>
+NIM_URL = <span class="token-string">"https://integrate.api.nvidia.com/v1/chat/completions"</span>
+API_KEY = <span class="token-string">"nvapi-your-key"</span>  <span class="token-comment"># Get at build.nvidia.com</span>
+
+<span class="token-keyword">def</span> <span class="token-function">chat</span>(prompt):
+    response = requests.post(NIM_URL, 
+        headers={<span class="token-string">"Authorization"</span>: <span class="token-string">f"Bearer {API_KEY}"</span>},
+        json={
+            <span class="token-string">"model"</span>: <span class="token-string">"meta/llama-3.1-70b-instruct"</span>,
+            <span class="token-string">"messages"</span>: [{<span class="token-string">"role"</span>: <span class="token-string">"user"</span>, <span class="token-string">"content"</span>: prompt}],
+            <span class="token-string">"temperature"</span>: <span class="token-number">0.7</span>
+        })
+    <span class="token-keyword">return</span> response.json()[<span class="token-string">"choices"</span>][<span class="token-number">0</span>][<span class="token-string">"message"</span>][<span class="token-string">"content"</span>]
+
+<span class="token-builtin">print</span>(chat(<span class="token-string">"What is a GPU?"</span>))</code></div>
+                    </div>
+
+                    <div class="callout tip">
+                        <div class="callout-header">💡 Quick Start</div>
+                        <ol style="margin-left: 20px;">
+                            <li>Visit <strong>build.nvidia.com</strong> for free API key</li>
+                            <li>Install: <code style="background: rgba(118,185,0,0.2); padding: 2px 8px; border-radius: 4px;">pip install requests</code></li>
+                            <li>Replace API key and run!</li>
+                        </ol>
+                    </div>
+                </section>
+            `;
+        }
+
+        function getChapter3Content() {
+            return `
+                <section class="section">
+                    <h2 class="section-title"><span class="section-icon">🎯</span>3.1 The Attention Mechanism</h2>
+                    
+                    <p>The <strong class="key-term">attention mechanism</strong> lets each position attend to all others, capturing long-range dependencies that RNNs struggled with.</p>
+
+                    <div class="callout exam">
+                        <div class="callout-header">🎯 Critical Exam Formula — MEMORIZE</div>
+                        <p>This formula appears on nearly every certification exam:</p>
+                    </div>
+
+                    <div class="formula">
+                        <span class="formula-label">Scaled Dot-Product Attention</span>
+                        Attention(Q, K, V) = softmax(QK<sup>T</sup> / √d<sub>k</sub>)V
+                    </div>
+
+                    <div class="diagram-container">
+                        <div class="diagram-title">🔍 Understanding Q, K, V</div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                            <div style="text-align: center; padding: 20px; background: rgba(0,212,255,0.1); border: 2px solid var(--accent-blue); border-radius: 12px;">
+                                <div style="font-size: 2rem;">🔍</div>
+                                <div style="font-weight: 700; color: var(--accent-blue);">Query (Q)</div>
+                                <div style="font-size: 0.85rem; color: var(--nvidia-text-dim);">"What am I looking for?"</div>
+                            </div>
+                            <div style="text-align: center; padding: 20px; background: rgba(118,185,0,0.1); border: 2px solid var(--nvidia-green); border-radius: 12px;">
+                                <div style="font-size: 2rem;">🔑</div>
+                                <div style="font-weight: 700; color: var(--nvidia-green);">Key (K)</div>
+                                <div style="font-size: 0.85rem; color: var(--nvidia-text-dim);">"What do I have?"</div>
+                            </div>
+                            <div style="text-align: center; padding: 20px; background: rgba(123,97,255,0.1); border: 2px solid var(--accent-purple); border-radius: 12px;">
+                                <div style="font-size: 2rem;">📦</div>
+                                <div style="font-weight: 700; color: var(--accent-purple);">Value (V)</div>
+                                <div style="font-size: 0.85rem; color: var(--nvidia-text-dim);">"What's the content?"</div>
+                            </div>
+                        </div>
+                        <p class="diagram-caption">Like a library search: Query=question, Keys=titles, Values=content</p>
+                    </div>
+
+                    <div class="callout important">
+                        <div class="callout-header">⚠️ Why √d<sub>k</sub>?</div>
+                        <p>Without scaling, large dot products push softmax into regions with tiny gradients (vanishing gradient problem). √d<sub>k</sub> keeps values trainable.</p>
+                    </div>
+
+                    <div class="diagram-container">
+                        <div class="diagram-title">Attention Computation Flow</div>
+                        <div class="flow-diagram">
+                            <div class="flow-node">Q × K<sup>T</sup></div>
+                            <span class="flow-arrow">→</span>
+                            <div class="flow-node">÷ √d<sub>k</sub></div>
+                            <span class="flow-arrow">→</span>
+                            <div class="flow-node">Mask</div>
+                            <span class="flow-arrow">→</span>
+                            <div class="flow-node highlight">Softmax</div>
+                            <span class="flow-arrow">→</span>
+                            <div class="flow-node">× V</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <h2 class="section-title"><span class="section-icon">⚡</span>3.2 Attention Variants</h2>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr><th>Variant</th><th>K/V Heads</th><th>Memory</th><th>Used In</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><strong>MHA</strong></td><td>Separate per head</td><td>Highest</td><td>GPT-2, Original</td></tr>
+                                <tr><td><strong>MQA</strong></td><td>1 shared</td><td>Lowest</td><td>PaLM, Falcon</td></tr>
+                                <tr class="highlight"><td><strong>GQA ⭐</strong></td><td>Groups share</td><td>Balanced</td><td>LLaMA 2/3, Mistral</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="memory-aid">
+                        <div class="memory-aid-header">🧠 Memory Aid: GQA = Goldilocks</div>
+                        <div class="mnemonic">MHA = <span>M</span>aximum memory | MQA = <span>M</span>inimal quality | GQA = <span>G</span>oldilocks</div>
+                        <p>GQA is "just right" — efficient AND high-quality. That's why LLaMA and Mistral use it!</p>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <h2 class="section-title"><span class="section-icon">💻</span>3.3 PyTorch Implementation</h2>
+                    
+                    <div class="code-container">
+                        <div class="code-header">
+                            <span class="code-lang">🔥 PyTorch</span>
+                            <span class="code-filename">attention.py</span>
+                            <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+                        </div>
+                        <div class="code-block"><code><span class="token-keyword">import</span> torch
+<span class="token-keyword">import</span> torch.nn <span class="token-keyword">as</span> nn
+<span class="token-keyword">import</span> math
+
+<span class="token-keyword">class</span> <span class="token-class">Attention</span>(nn.Module):
+    <span class="token-keyword">def</span> <span class="token-function">forward</span>(self, Q, K, V, mask=<span class="token-keyword">None</span>):
+        d_k = Q.size(-<span class="token-number">1</span>)
+        
+        <span class="token-comment"># Scaled dot-product attention</span>
+        scores = torch.matmul(Q, K.transpose(-<span class="token-number">2</span>, -<span class="token-number">1</span>)) / math.sqrt(d_k)
+        
+        <span class="token-keyword">if</span> mask <span class="token-keyword">is not</span> <span class="token-keyword">None</span>:
+            scores = scores.masked_fill(mask == <span class="token-number">0</span>, <span class="token-number">-1e9</span>)
+        
+        weights = torch.softmax(scores, dim=-<span class="token-number">1</span>)
+        <span class="token-keyword">return</span> torch.matmul(weights, V)
+
+<span class="token-comment"># Usage: attention = Attention()</span>
+<span class="token-comment"># output = attention(Q, K, V)</span></code></div>
+                    </div>
+                </section>
+            `;
+        }
+
+        function getChapter8Content() {
+            return `
+                <section class="section">
+                    <h2 class="section-title"><span class="section-icon">🎯</span>8.1 Why RAG?</h2>
+                    
+                    <p><strong class="key-term">RAG (Retrieval-Augmented Generation)</strong> combines LLMs with external knowledge retrieval. This solves key LLM limitations: hallucinations, outdated knowledge, and lack of domain expertise.</p>
+
+                    <div class="callout definition">
+                        <div class="callout-header">📘 The RAG Advantage</div>
+                        <p><strong>Without RAG:</strong> LLM relies only on training data → Hallucinations, stale info</p>
+                        <p><strong>With RAG:</strong> LLM retrieves + reasons over fresh data → Grounded, accurate responses</p>
+                    </div>
+
+                    <div class="diagram-container">
+                        <div class="diagram-title">🔄 RAG Pipeline Architecture</div>
+                        <div class="flow-diagram">
+                            <div class="flow-node">📝 Query</div>
+                            <span class="flow-arrow">→</span>
+                            <div class="flow-node">🔢 Embed</div>
+                            <span class="flow-arrow">→</span>
+                            <div class="flow-node highlight">🔍 Search</div>
+                            <span class="flow-arrow">→</span>
+                            <div class="flow-node">📄 Context</div>
+                            <span class="flow-arrow">→</span>
+                            <div class="flow-node">🤖 LLM</div>
+                        </div>
+                        <p class="diagram-caption">Query → Embed → Search Vector DB → Add Context → Generate</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-value">↓90%</div><div class="stat-label">Hallucination Reduction</div></div>
+                        <div class="stat-card"><div class="stat-value">Real-time</div><div class="stat-label">Knowledge Updates</div></div>
+                        <div class="stat-card"><div class="stat-value">↓60%</div><div class="stat-label">Token Usage</div></div>
+                        <div class="stat-card"><div class="stat-value">Citations</div><div class="stat-label">Source Grounding</div></div>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <h2 class="section-title"><span class="section-icon">⚡</span>8.2 RAG vs Fine-Tuning</h2>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr><th>Aspect</th><th>RAG</th><th>Fine-Tuning</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><strong>Updates</strong></td><td>Instant (add docs)</td><td>Requires retraining</td></tr>
+                                <tr><td><strong>Cost</strong></td><td>Lower (inference only)</td><td>Higher (GPU training)</td></tr>
+                                <tr><td><strong>Citations</strong></td><td>Built-in</td><td>Not available</td></tr>
+                                <tr class="highlight"><td><strong>Best For</strong></td><td>Dynamic knowledge</td><td>Style/behavior</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="callout tip">
+                        <div class="callout-header">💡 When to Use Each</div>
+                        <p><strong>Use RAG:</strong> Frequently changing data, need citations, domain knowledge</p>
+                        <p><strong>Use Fine-tuning:</strong> Specific output format, behavior modification, style transfer</p>
+                        <p><strong>Use Both:</strong> Fine-tune for style + RAG for knowledge = Best results!</p>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <h2 class="section-title"><span class="section-icon">💻</span>8.3 RAG Implementation</h2>
+                    
+                    <div class="code-container">
+                        <div class="code-header">
+                            <span class="code-lang">🐍 Python</span>
+                            <span class="code-filename">simple_rag.py</span>
+                            <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+                        </div>
+                        <div class="code-block"><code><span class="token-keyword">from</span> sentence_transformers <span class="token-keyword">import</span> SentenceTransformer
+<span class="token-keyword">import</span> numpy <span class="token-keyword">as</span> np
+
+<span class="token-comment"># 1. Create embeddings</span>
+model = SentenceTransformer(<span class="token-string">'all-MiniLM-L6-v2'</span>)
+docs = [<span class="token-string">"NVIDIA GPUs power AI"</span>, <span class="token-string">"RAG reduces hallucinations"</span>]
+embeddings = model.encode(docs)
+
+<span class="token-comment"># 2. Search function</span>
+<span class="token-keyword">def</span> <span class="token-function">search</span>(query, k=<span class="token-number">2</span>):
+    q_emb = model.encode([query])
+    scores = np.dot(embeddings, q_emb.T).flatten()
+    top_k = np.argsort(scores)[::-<span class="token-number">1</span>][:k]
+    <span class="token-keyword">return</span> [docs[i] <span class="token-keyword">for</span> i <span class="token-keyword">in</span> top_k]
+
+<span class="token-comment"># 3. RAG query</span>
+context = search(<span class="token-string">"What powers AI?"</span>)
+prompt = <span class="token-string">f"Context: {context}\\nQuestion: What powers AI?"</span>
+<span class="token-comment"># Send to LLM...</span></code></div>
+                    </div>
+                </section>
+            `;
+        }
+
+        function getGenericContent(num) {
+            const chapter = findChapter(num);
+            return `
+                <section class="section">
+                    <h2 class="section-title"><span class="section-icon">📚</span>${num}.1 Overview</h2>
+                    <p>This chapter covers <strong>${chapter.title}</strong> — ${chapter.subtitle}. Master these concepts to build production-ready AI applications with NVIDIA technologies.</p>
+                    
+                    <div class="callout nvidia">
+                        <div class="callout-header">🟢 NVIDIA Technology Focus</div>
+                        <p>This chapter explores how NVIDIA tools and platforms accelerate ${chapter.title.toLowerCase()}. You'll learn practical implementation patterns used in enterprise AI deployments.</p>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <h2 class="section-title"><span class="section-icon">🎯</span>${num}.2 Key Concepts</h2>
+                    <p>Understanding the fundamental principles enables you to apply these techniques effectively across different use cases and scale from prototype to production.</p>
+                    
+                    <div class="callout exam">
+                        <div class="callout-header">🎯 Exam Focus</div>
+                        <p>Pay special attention to the learning objectives listed above. Certification questions frequently test understanding of core concepts and their practical applications.</p>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <h2 class="section-title"><span class="section-icon">💻</span>${num}.3 Practical Application</h2>
+                    <p>Apply these concepts hands-on using NVIDIA NIM and related tools. The best way to learn is through building real projects.</p>
+                    
+                    <div class="callout tip">
+                        <div class="callout-header">💡 Study Tip</div>
+                        <p>After reading this chapter, try implementing the concepts using the code examples. Hands-on practice is essential for certification success and real-world competency.</p>
+                    </div>
+                </section>
+            `;
+        }
+
+        function getSummary(num) {
+            const summaries = {
+                1: ["Generative AI creates new content by learning data distributions", "2017 Transformer architecture enabled all modern LLMs", "Four model types: Autoregressive, Diffusion, VAE, GAN", "NVIDIA GPUs with CUDA cores enable parallel AI computation", "NVIDIA NIM provides easy AI inference APIs", "Stack: Hardware → CUDA → TensorRT → NIM → Apps"],
+                2: ["H100 GPU: 16,896 CUDA cores, 80GB HBM3", "TensorRT-LLM optimizes inference performance", "NGC Catalog provides pre-trained models", "CUDA enables GPU parallel computing", "cuDNN accelerates deep learning primitives"],
+                3: ["Attention: softmax(QK^T/√d_k)V — memorize this!", "Q searches, K matches, V contains information", "√d_k prevents vanishing gradients", "GQA is industry standard (LLaMA, Mistral)", "Multi-head attention captures different aspects", "Flash Attention: 2-4x faster, O(n) memory"],
+                4: ["Decoder-only for generation (GPT, LLaMA)", "Encoder-decoder for translation (T5, BART)", "Scaling laws predict performance with compute", "BPE tokenization creates subword vocabulary", "Context windows up to 128K+ tokens"],
+                5: ["Clear, specific prompts get better results", "System prompts define role and context", "Output formatting controls response structure", "Iterative refinement improves quality", "Examples guide model behavior"],
+                6: ["Chain-of-thought improves reasoning", "Zero-shot uses only instructions", "Few-shot provides examples", "Self-consistency samples multiple paths", "Tree-of-thoughts for complex problems"],
+                7: ["NIM uses OpenAI-compatible APIs", "Streaming delivers tokens in real-time", "Exponential backoff for error handling", "Token optimization reduces costs", "Async processing for scalability"],
+                8: ["RAG = Retrieval + Generation", "Reduces hallucinations with grounding", "Instant knowledge updates without retraining", "Provides source citations", "Combines with fine-tuning for best results"],
+                9: ["Embeddings: dense vector representations", "Common dimensions: 384, 768, 1536", "HNSW for fast approximate search", "Cosine similarity measures relevance", "Vector DBs: Milvus, Pinecone, ChromaDB"],
+                10: ["Chunking: 256-512 tokens optimal", "Overlap prevents context loss", "Reranking improves relevance", "Hybrid = keyword + semantic search", "Evaluation: recall, precision, MRR"],
+                11: ["Agents = LLM + Tools + Memory", "ReAct: Thought → Action → Observation", "Function calling invokes external tools", "Memory tracks conversation state", "Error handling ensures reliability"],
+                12: ["Supervisor routes to specialized agents", "Handoff transfers control between agents", "LangGraph enables complex workflows", "Consensus for multi-agent decisions", "Monitoring tracks agent behavior"],
+                13: ["VLMs process images and text together", "CLIP aligns image-text representations", "GPT-4V understands visual content", "Document analysis extracts structure", "Visual QA answers image questions"],
+                14: ["Diffusion = iterative denoising", "ControlNet adds spatial conditioning", "CFG balances conditioning strength", "Inpainting fills selected regions", "LoRA enables efficient fine-tuning"],
+                15: ["ASR: Speech to text (Whisper, Riva)", "TTS: Text to speech synthesis", "Real-time processing for live audio", "NVIDIA Riva for enterprise speech", "Voice agents combine ASR + LLM + TTS"],
+                16: ["NIM containers package inference services", "Kubernetes orchestrates deployments", "Health checks verify availability", "Load balancing distributes traffic", "Security: authentication, encryption"],
+                17: ["Quantization: FP32 → INT8 for efficiency", "Batching improves GPU utilization", "KV cache reduces recomputation", "TensorRT-LLM optimizes inference", "Speculative decoding accelerates generation"],
+                18: ["Morpheus for cybersecurity AI", "Log analysis detects anomalies", "Phishing detection with NLP", "Threat intelligence correlation", "SOC automation reduces workload"],
+                19: ["On-chain analytics with AI", "Smart contract auditing", "Transaction pattern analysis", "DeFi risk monitoring", "Crypto sentiment analysis"],
+                20: ["Omniverse for 3D simulation", "Digital twins replicate physical systems", "NeRF creates 3D from 2D images", "Avatar generation and animation", "Spatial computing for metaverse"],
+                21: ["Design complete end-to-end systems", "Integrate multiple NVIDIA services", "Implement comprehensive testing", "Document architecture and APIs", "Deploy with monitoring"],
+                22: ["Review all certification topics", "Practice with timed mock exams", "Focus on weak areas", "Hands-on labs are essential", "70%+ typically required to pass"]
+            };
+            
+            const points = summaries[num] || ["Review chapter objectives", "Practice hands-on examples", "Complete knowledge check"];
+            
+            return `
+                <div class="chapter-summary">
+                    <div class="summary-title">📋 Chapter ${num} Summary</div>
+                    <div class="summary-points">
+                        ${points.map((p, i) => `
+                            <div class="summary-point">
+                                <span class="summary-point-icon">${i + 1}</span>
+                                <div>${p}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ===== QUIZ FUNCTIONS =====
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            if (!container || !quizData[currentChapter]) {
+                if (container) container.innerHTML = '<p style="color: var(--nvidia-text-dim);">Quiz coming soon for this chapter.</p>';
+                return;
+            }
+
+            const quiz = quizData[currentChapter];
+            const q = quiz[quizState.currentQuestion];
+
+            container.innerHTML = `
+                <div class="quiz-header">
+                    <div class="quiz-title">📝 Chapter ${currentChapter} Quiz</div>
+                    <div class="quiz-progress">Question ${quizState.currentQuestion + 1} of ${quiz.length}</div>
+                </div>
+                <div class="quiz-question">${quizState.currentQuestion + 1}. ${q.q}</div>
+                <div class="quiz-options">
+                    ${q.opts.map((opt, i) => `
+                        <div class="quiz-option" onclick="selectOption(${i})" data-index="${i}">
+                            <span class="option-letter">${String.fromCharCode(65 + i)}</span>
+                            <span>${opt}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="quiz-explanation" id="quiz-explanation">
+                    <div class="quiz-explanation-title">💡 Explanation</div>
+                    <p>${q.exp}</p>
+                </div>
+                <div class="quiz-nav">
+                    <button class="quiz-btn secondary" onclick="prevQuestion()" ${quizState.currentQuestion === 0 ? 'disabled' : ''}>← Previous</button>
+                    <button class="quiz-btn" onclick="nextQuestion()" id="next-btn" disabled>Next →</button>
+                </div>
+            `;
+        }
+
+        function selectOption(index) {
+            const quiz = quizData[currentChapter];
+            const q = quiz[quizState.currentQuestion];
+            const options = document.querySelectorAll('.quiz-option');
+
+            options.forEach(opt => opt.classList.remove('selected', 'correct', 'incorrect'));
+            options[index].classList.add('selected');
+            options[index].classList.add(index === q.ans ? 'correct' : 'incorrect');
+            
+            if (index !== q.ans) {
+                options[q.ans].classList.add('correct');
+            } else {
+                quizState.score++;
+            }
+
+            quizState.answers[quizState.currentQuestion] = index;
+            document.getElementById('quiz-explanation').classList.add('show');
+            document.getElementById('next-btn').disabled = false;
+        }
+
+        function nextQuestion() {
+            const quiz = quizData[currentChapter];
+            if (quizState.currentQuestion < quiz.length - 1) {
+                quizState.currentQuestion++;
+                renderQuiz();
+            } else {
+                showResults();
+            }
+        }
+
+        function prevQuestion() {
+            if (quizState.currentQuestion > 0) {
+                quizState.currentQuestion--;
+                renderQuiz();
+            }
+        }
+
+        function showResults() {
+            const quiz = quizData[currentChapter];
+            const pct = Math.round((quizState.score / quiz.length) * 100);
+            const container = document.getElementById('quiz-container');
+
+            container.innerHTML = `
+                <div class="quiz-score">
+                    <div class="score-display">${pct}%</div>
+                    <div class="score-label">${quizState.score} of ${quiz.length} correct</div>
+                    <p style="margin-top: 20px; color: var(--nvidia-text-dim);">
+                        ${pct >= 80 ? '🎉 Excellent! Ready for the exam!' :
+                          pct >= 60 ? '👍 Good job! Review missed areas.' :
+                          '📚 Keep studying! Review the chapter.'}
+                    </p>
+                    <button class="quiz-btn" onclick="resetQuiz()" style="margin-top: 24px;">Try Again</button>
+                </div>
+            `;
+        }
+
+        function resetQuiz() {
+            quizState = { currentQuestion: 0, answers: [], score: 0 };
+            renderQuiz();
+        }
+
+        // ===== GLOSSARY =====
+        function renderGlossary(filter = '') {
+            const list = document.getElementById('glossary-list');
+            const filtered = filter 
+                ? glossaryData.filter(g => 
+                    g.term.toLowerCase().includes(filter.toLowerCase()) ||
+                    g.definition.toLowerCase().includes(filter.toLowerCase()))
+                : glossaryData;
+
+            list.innerHTML = filtered.map(item => `
+                <div class="glossary-item">
+                    <div class="glossary-term">${item.term}</div>
+                    <div class="glossary-definition">${item.definition}</div>
+                    <span class="glossary-category">${item.category}</span>
+                </div>
+            `).join('') || '<p style="text-align: center; color: var(--nvidia-text-dim);">No terms found</p>';
+        }
+
+        function openGlossary() {
+            renderGlossary();
+            document.getElementById('glossary-modal').classList.add('active');
+        }
+
+        function closeGlossary() {
+            document.getElementById('glossary-modal').classList.remove('active');
+        }
+
+        function filterGlossary(query) {
+            renderGlossary(query);
+        }
+
+        // ===== UI FUNCTIONS =====
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            document.getElementById('sidebar').classList.toggle('mobile-open');
+        }
+
+        function filterTOC(query) {
+            query = query.toLowerCase();
+            document.querySelectorAll('.toc-chapter').forEach(ch => {
+                ch.style.display = ch.textContent.toLowerCase().includes(query) ? 'flex' : 'none';
+            });
+        }
+
+        function updateProgress() {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+            document.getElementById('progress-bar').style.width = progress + '%';
+        }
+
+        function copyCode(button) {
+            const code = button.closest('.code-container').querySelector('code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                button.textContent = '✓ Copied!';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = '📋 Copy';
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function scrollToQuiz() {
+            const quiz = document.getElementById('quiz-container');
+            if (quiz) quiz.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function initGPUAnimation() {
+            const die = document.getElementById('gpu-die');
+            if (!die) return;
+            
+            die.innerHTML = '';
+            for (let i = 0; i < 64; i++) {
+                const core = document.createElement('div');
+                core.className = 'cuda-core';
+                die.appendChild(core);
+            }
+            
+            setInterval(() => {
+                const cores = die.querySelectorAll('.cuda-core');
+                cores.forEach(core => {
+                    core.classList.toggle('active', Math.random() > 0.5);
+                });
+            }, 200);
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
