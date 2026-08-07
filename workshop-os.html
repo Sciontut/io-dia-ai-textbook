@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS · Workshop OS — Second Brain Graph</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #070a07; --panel: rgba(14,20,14,0.92); --line: rgba(118,185,0,0.2); --line2: rgba(118,185,0,0.4);
+    --green: #76B900; --green-hi: #9dff00; --cyan: #00D4FF; --amber: #FFD93D; --text: #d8e4d0; --dim: #7a8a72;
+    --mono: 'JetBrains Mono', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
+#stage { position: fixed; inset: 0; }
+canvas { display: block; }
+.hud { position: fixed; z-index: 10; }
+/* Left panel */
+#left {
+    top: 16px; left: 16px; width: 250px; max-height: calc(100vh - 32px); overflow-y: auto;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px;
+    backdrop-filter: blur(10px);
+}
+#left h1 { font-size: 0.95rem; letter-spacing: 2px; color: var(--green-hi); }
+#left .sub { font-family: var(--mono); font-size: 0.62rem; color: var(--dim); margin: 3px 0 12px; }
+.sec { font-family: var(--mono); font-size: 0.58rem; letter-spacing: 2.5px; color: var(--dim); text-transform: uppercase; margin: 14px 0 8px; }
+#search { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--line2); border-radius: 8px;
+    padding: 8px 10px; color: var(--text); font-family: 'Outfit'; font-size: 0.85rem; }
+#search:focus { outline: none; border-color: var(--green); }
+#inspector { font-size: 0.78rem; line-height: 1.6; color: var(--dim); min-height: 60px;
+    background: rgba(0,0,0,0.25); border-radius: 8px; padding: 10px; border: 1px dashed var(--line); }
+#inspector .iname { color: var(--green-hi); font-weight: 700; }
+#inspector .itype { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 1.5px; color: var(--cyan); text-transform: uppercase; }
+.hub-row { display: flex; justify-content: space-between; font-size: 0.78rem; padding: 4px 2px; cursor: pointer; border-radius: 6px; }
+.hub-row:hover { background: rgba(118,185,0,0.1); color: var(--green-hi); }
+.hub-row .n { font-family: var(--mono); font-size: 0.68rem; color: var(--dim); }
+.slider-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 0.72rem; color: var(--dim); }
+.slider-row label { width: 64px; }
+.slider-row input[type=range] { flex: 1; accent-color: var(--green); }
+.toggle-row { display: flex; align-items: center; gap: 8px; font-size: 0.76rem; padding: 3px 0; color: var(--dim); cursor: pointer; }
+.toggle-row input { accent-color: var(--green); }
+/* Right panel */
+#right {
+    top: 16px; right: 16px; width: 172px; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 14px; padding: 14px; backdrop-filter: blur(10px);
+}
+.f-row { display: flex; align-items: center; gap: 8px; font-size: 0.76rem; padding: 4px 2px; cursor: pointer; border-radius: 6px; }
+.f-row:hover { background: rgba(118,185,0,0.08); }
+.f-row.off { opacity: 0.35; }
+.f-dot { width: 9px; height: 9px; border-radius: 50%; }
+.f-row .fc { margin-left: auto; font-family: var(--mono); font-size: 0.64rem; color: var(--dim); }
+/* Bottom bar */
+#bottom {
+    bottom: 16px; left: 50%; transform: translateX(-50%);
+    background: var(--panel); border: 1px solid var(--line); border-radius: 24px; padding: 8px 16px;
+    display: flex; align-items: center; gap: 12px; backdrop-filter: blur(10px);
+}
+#stats { font-family: var(--mono); font-size: 0.68rem; color: var(--green); white-space: nowrap; }
+.bbtn { padding: 6px 14px; border-radius: 16px; border: 1px solid var(--line2); background: rgba(118,185,0,0.08);
+    color: var(--text); font-size: 0.74rem; cursor: pointer; font-family: 'Outfit'; white-space: nowrap; }
+.bbtn:hover, .bbtn.active { border-color: var(--green); color: var(--green-hi); }
+.theme-dot { width: 16px; height: 16px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+.theme-dot.active { border-color: #fff; }
+#hint { position: fixed; bottom: 16px; left: 16px; font-family: var(--mono); font-size: 0.58rem; color: var(--dim); line-height: 1.9; z-index: 5; }
+#backlink { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 10;
+    font-family: var(--mono); font-size: 0.62rem; letter-spacing: 2px; }
+#backlink a { color: var(--dim); text-decoration: none; }
+#backlink a:hover { color: var(--green); }
+#graph3d { position: fixed; inset: 0; display: none; }
+::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: rgba(118,185,0,0.25); border-radius: 3px; }
+@media (max-width: 860px) { #right { display: none; } #left { width: 210px; } }
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="cv"></canvas></div>
+<div id="graph3d"></div>
+<div id="backlink" class="hud"><a href="mission-control.html">◉ MISSION CONTROL</a> · <a href="index.html">📖 IO DIA</a></div>
+
+<div id="left" class="hud">
+    <h1>🧠 WORKSHOP OS</h1>
+    <div class="sub" id="meta">— notes · — connections</div>
+    <input id="search" placeholder="Search the brain…" oninput="doSearch(this.value)">
+    <div class="sec">Inspector</div>
+    <div id="inspector">Click a node to inspect it. Shift-click to pin/isolate. Esc to clear.</div>
+    <div class="sec">Top Hubs</div>
+    <div id="hubs"></div>
+    <div class="sec">Forces</div>
+    <div class="slider-row"><label>Repel</label><input type="range" id="f-repel" min="200" max="4000" value="1400" oninput="P.repel=+this.value"></div>
+    <div class="slider-row"><label>Link len</label><input type="range" id="f-link" min="20" max="220" value="70" oninput="P.linkLen=+this.value"></div>
+    <div class="slider-row"><label>Gravity</label><input type="range" id="f-grav" min="0" max="20" value="6" oninput="P.gravity=+this.value/100"></div>
+    <div class="sec">Display</div>
+    <label class="toggle-row"><input type="checkbox" id="t-labels" checked onchange="P.labels=this.checked"> Labels</label>
+    <label class="toggle-row"><input type="checkbox" id="t-glow" checked onchange="P.glow=this.checked"> Glow</label>
+    <label class="toggle-row"><input type="checkbox" id="t-flow" checked onchange="P.flow=this.checked"> Particle flow</label>
+    <label class="toggle-row"><input type="checkbox" id="t-curve" checked onchange="P.curved=this.checked"> Curved links</label>
+</div>
+
+<div id="right" class="hud">
+    <div class="sec" style="margin-top:0;">Filter</div>
+    <div id="filters"></div>
+</div>
+
+<div id="bottom" class="hud">
+    <span id="stats">—</span>
+    <button class="bbtn" id="btn-fit" onclick="fitView()">⊙ Fit</button>
+    <button class="bbtn" id="btn-3d" onclick="toggle3D()">3D</button>
+    <span class="theme-dot active" style="background:#76B900" onclick="setTheme('green',this)"></span>
+    <span class="theme-dot" style="background:#7B61FF" onclick="setTheme('purple',this)"></span>
+    <span class="theme-dot" style="background:#00D4FF" onclick="setTheme('blue',this)"></span>
+</div>
+<div id="hint" class="hud">scroll zoom · drag pan · grab nodes<br>click = focus · shift-click = isolate · esc = clear</div>
+<script>
+// ===== TYPES =====
+const TYPES = {
+    router:       { color: "#9dff00", label: "Router",       size: 16 },
+    constitution: { color: "#76B900", label: "Constitution", size: 11 },
+    moc:          { color: "#FFD93D", label: "MOC Suites",   size: 12 },
+    topic:        { color: "#00D4FF", label: "Topics",       size: 8 },
+    dashboard:    { color: "#7B61FF", label: "Dashboards",   size: 8 },
+    people:       { color: "#FF3CAC", label: "People",       size: 7 },
+    agency:       { color: "#FF6B35", label: "Agencies",     size: 7 },
+    study:        { color: "#00FFD1", label: "Study Paths",  size: 8 },
+    template:     { color: "#8a8f98", label: "Templates",    size: 6 },
+    library:      { color: "#4a90d9", label: "Files Library",size: 6 },
+    daily:        { color: "#5DCAA5", label: "Daily Notes",  size: 6 }
+};
+
+// ===== EMBEDDED DATA (live vault structure; regenerate with vault_scan.py) =====
+const EMBEDDED = {
+    nodes: [
+        { id: "MEMORY.md", type: "router", note: "Long-term memory · the claude.md of this brain. Curated durable facts, standing decisions, preferences. Every session starts here." },
+        { id: "AGENTS.md", type: "constitution", note: "Standing orders: Daily Study Brief · PDF Intake · Memory Consolidation. Authority, triggers, approval gates, escalation." },
+        { id: "SOUL.md", type: "constitution", note: "JARVIS persona — calm, precise, lightly witty. Voice rules and hard boundaries. Versioned personality." },
+        { id: "USER.md", type: "constitution", note: "The operator: Scion — chef → creative technologist. Blue Shadow Studios, NVIDIA cert mission, Kristie." },
+        { id: "IDENTITY.md", type: "constitution", note: "JARVIS 🌪️ — born 2026-07-18, the night the Obsidian bridge came online." },
+        { id: "Home.md", type: "dashboard", note: "Vault landing note." },
+        { id: "2025-12-10.md", type: "daily", note: "Daily note." },
+        { id: "MOC-banking", type: "moc", note: "Map of Content — banking documents." },
+        { id: "MOC-bonds", type: "moc", note: "Map of Content — bonds & instruments." },
+        { id: "MOC-constitutional", type: "moc", note: "Map of Content — constitutional materials." },
+        { id: "MOC-contracts", type: "moc", note: "Map of Content — contract law." },
+        { id: "MOC-criminal", type: "moc", note: "Map of Content — criminal procedure." },
+        { id: "MOC-maritime", type: "moc", note: "Map of Content — admiralty & maritime." },
+        { id: "MOC-property", type: "moc", note: "Map of Content — property & land." },
+        { id: "MOC-tax", type: "moc", note: "Map of Content — tax." },
+        { id: "MOC-trusts", type: "moc", note: "Map of Content — trusts." },
+        { id: "MOC-ucc", type: "moc", note: "Map of Content — Uniform Commercial Code." },
+        { id: "OpenClaw Teardown", type: "topic", note: "Architecture harvest from openclaw/openclaw — gateway, file-contract memory, standing orders, agent loop." },
+        { id: "Local Voice Stack", type: "topic", note: "faster-whisper + Kokoro — the 100% local voice loop. Next actions checklist inside." },
+        { id: "JARVIS 2.0 Blueprint", type: "topic", note: "Gap analysis vs the n8n Telegram assistant blueprint. Construction board ≈45% → 75% on activation." },
+        { id: "jarvis_voice_local.py", type: "topic", note: "Runnable local voice loop script — lives beside its research note." },
+        { id: "Dashboard-Main", type: "dashboard", note: "Primary dashboard." },
+        { id: "Dashboard-Cases", type: "dashboard", note: "Cases dashboard." },
+        { id: "Dashboard-Files", type: "dashboard", note: "Files dashboard — window into the 900+ document library." },
+        { id: "Dashboard-Study", type: "dashboard", note: "Study dashboard." },
+        { id: "Dashboard-Topics", type: "dashboard", note: "Topics dashboard." },
+        { id: "Dashboards-Index", type: "dashboard", note: "Dashboard index." },
+        { id: "Daily-Notes-Template", type: "template", note: "Daily note template." },
+        { id: "People/", type: "people", note: "People wing — contacts and profiles. Run vault_scan.py for full expansion." },
+        { id: "Agencies/", type: "agency", note: "Agencies wing. Run vault_scan.py for full expansion." },
+        { id: "Study Paths/", type: "study", note: "Study Paths wing — certification tracks live here. Run vault_scan.py for full expansion." },
+        { id: "Templates/", type: "template", note: "Templates wing." },
+        { id: "Files Library", type: "library", note: "≈900 legal & financial reference documents — banking, trusts, UCC, bonds, property, tax. The deep archive the MOC suites map. vault_scan.py expands every file into its own node." }
+    ],
+    links: []
+};
+(function wire() {
+    const L = EMBEDDED.links, all = EMBEDDED.nodes.map(n => n.id);
+    const mocs = all.filter(id => id.startsWith("MOC-"));
+    const dashes = all.filter(id => id.startsWith("Dashboard"));
+    ["AGENTS.md","SOUL.md","USER.md","IDENTITY.md","Home.md","2025-12-10.md"].forEach(t => L.push([ "MEMORY.md", t ]));
+    mocs.forEach(m => { L.push(["Files Library", m]); L.push([m, "Dashboard-Topics"]); });
+    ["OpenClaw Teardown","Local Voice Stack","JARVIS 2.0 Blueprint"].forEach(t => L.push(["MEMORY.md", t]));
+    L.push(["Local Voice Stack","jarvis_voice_local.py"]);
+    L.push(["OpenClaw Teardown","JARVIS 2.0 Blueprint"]);
+    L.push(["JARVIS 2.0 Blueprint","Local Voice Stack"]);
+    dashes.forEach(d => L.push(["Dashboards-Index", d]));
+    L.push(["Home.md","Dashboards-Index"]);
+    L.push(["Dashboard-Files","Files Library"]);
+    L.push(["Dashboard-Study","Study Paths/"]);
+    L.push(["Home.md","People/"]); L.push(["Home.md","Agencies/"]);
+    L.push(["Daily-Notes-Template","Templates/"]); L.push(["2025-12-10.md","Daily-Notes-Template"]);
+    L.push(["USER.md","People/"]);
+})();
+
+// ===== STATE =====
+let DATA = { nodes: [], links: [] };
+const P = { repel: 1400, linkLen: 70, gravity: 0.06, labels: true, glow: true, flow: true, curved: true, theme: "green" };
+let cam = { x: 0, y: 0, z: 1 };
+let focusId = null, isolate = false, hoverId = null, typeOff = {};
+let mode3d = false, graph3d = null;
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+
+function loadData() {
+    fetch('graph-data.json').then(r => r.ok ? r.json() : Promise.reject()).then(j => boot(j))
+        .catch(() => boot(EMBEDDED));
+}
+function boot(raw) {
+    DATA.nodes = raw.nodes.map(n => ({ ...n, x: (Math.random()-0.5)*900, y: (Math.random()-0.5)*900, vx: 0, vy: 0, deg: 0 }));
+    const idx = Object.fromEntries(DATA.nodes.map(n => [n.id, n]));
+    DATA.links = raw.links.map(l => Array.isArray(l) ? { s: idx[l[0]], t: idx[l[1]] } : { s: idx[l.source], t: idx[l.target] }).filter(l => l.s && l.t);
+    DATA.links.forEach(l => { l.s.deg++; l.t.deg++; });
+    document.getElementById('meta').textContent = `${DATA.nodes.length} notes · ${DATA.links.length} connections`;
+    document.getElementById('stats').textContent = `${DATA.nodes.length} notes · ${DATA.links.length} links`;
+    renderFilters(); renderHubs(); resize(); tickLoop();
+}
+
+function renderFilters() {
+    const counts = {};
+    DATA.nodes.forEach(n => counts[n.type] = (counts[n.type]||0)+1);
+    document.getElementById('filters').innerHTML = Object.entries(TYPES)
+        .filter(([k]) => counts[k])
+        .map(([k, t]) => `<div class="f-row ${typeOff[k]?'off':''}" onclick="toggleType('${k}')">
+            <span class="f-dot" style="background:${t.color}"></span>${t.label}<span class="fc">${counts[k]}</span></div>`).join('');
+}
+function toggleType(k) { typeOff[k] = !typeOff[k]; renderFilters(); }
+function renderHubs() {
+    const top = [...DATA.nodes].sort((a,b) => b.deg - a.deg).slice(0, 8);
+    document.getElementById('hubs').innerHTML = top.map(n =>
+        `<div class="hub-row" onclick="focusNode('${n.id.replace(/'/g,"\\'")}')"><span>● ${n.id.replace('.md','')}</span><span class="n">${n.deg}</span></div>`).join('');
+}
+
+// ===== PHYSICS =====
+function tick() {
+    const N = DATA.nodes.filter(n => !typeOff[n.type]);
+    for (let i = 0; i < N.length; i++) {
+        const a = N[i];
+        a.vx -= a.x * P.gravity * 0.01; a.vy -= a.y * P.gravity * 0.01;
+        for (let j = i+1; j < N.length; j++) {
+            const b = N[j];
+            let dx = a.x-b.x, dy = a.y-b.y, d2 = dx*dx+dy*dy+0.01, d = Math.sqrt(d2);
+            if (d < 420) { const f = P.repel / d2; dx /= d; dy /= d;
+                a.vx += dx*f; a.vy += dy*f; b.vx -= dx*f; b.vy -= dy*f; }
+        }
+    }
+    DATA.links.forEach(l => {
+        if (typeOff[l.s.type] || typeOff[l.t.type]) return;
+        let dx = l.t.x-l.s.x, dy = l.t.y-l.s.y, d = Math.sqrt(dx*dx+dy*dy)+0.01;
+        const f = (d - P.linkLen) * 0.004;
+        dx /= d; dy /= d;
+        l.s.vx += dx*f*d*0.02; l.s.vy += dy*f*d*0.02;
+        l.t.vx -= dx*f*d*0.02; l.t.vy -= dy*f*d*0.02;
+    });
+    N.forEach(n => { if (n === dragNode) return; n.vx *= 0.86; n.vy *= 0.86; n.x += n.vx; n.y += n.vy; });
+}
+
+// ===== RENDER =====
+let flowT = 0;
+function themeGlow() { return P.theme === 'purple' ? '#7B61FF' : P.theme === 'blue' ? '#00D4FF' : '#76B900'; }
+function neighborSet(id) {
+    const s = new Set([id]);
+    DATA.links.forEach(l => { if (l.s.id === id) s.add(l.t.id); if (l.t.id === id) s.add(l.s.id); });
+    return s;
+}
+function draw() {
+    const w = cv.width, h = cv.height;
+    ctx.clearRect(0, 0, w, h);
+    ctx.save();
+    ctx.translate(w/2 + cam.x, h/2 + cam.y); ctx.scale(cam.z, cam.z);
+    const focus = focusId ? neighborSet(focusId) : null;
+    flowT += 0.012;
+    DATA.links.forEach(l => {
+        if (typeOff[l.s.type] || typeOff[l.t.type]) return;
+        const inF = !focus || (focus.has(l.s.id) && focus.has(l.t.id));
+        if (isolate && focus && !inF) return;
+        ctx.globalAlpha = inF ? 0.5 : 0.06;
+        ctx.strokeStyle = inF && focus ? themeGlow() : 'rgba(140,180,120,0.7)';
+        ctx.lineWidth = inF && focus ? 1.4/cam.z : 0.7/cam.z;
+        const mx = (l.s.x+l.t.x)/2, my = (l.s.y+l.t.y)/2;
+        const cxp = mx + (P.curved ? (l.t.y-l.s.y)*0.12 : 0), cyp = my - (P.curved ? (l.t.x-l.s.x)*0.12 : 0);
+        ctx.beginPath(); ctx.moveTo(l.s.x, l.s.y); ctx.quadraticCurveTo(cxp, cyp, l.t.x, l.t.y); ctx.stroke();
+        if (P.flow && inF) {
+            const t = (flowT + (l.s.x*7+l.t.y*3) % 1) % 1;
+            const px = (1-t)*(1-t)*l.s.x + 2*(1-t)*t*cxp + t*t*l.t.x;
+            const py = (1-t)*(1-t)*l.s.y + 2*(1-t)*t*cyp + t*t*l.t.y;
+            ctx.globalAlpha = 0.9; ctx.fillStyle = themeGlow();
+            ctx.beginPath(); ctx.arc(px, py, 1.6/cam.z, 0, 7); ctx.fill();
+        }
+    });
+    DATA.nodes.forEach(n => {
+        if (typeOff[n.type]) return;
+        const t = TYPES[n.type] || TYPES.topic;
+        const inF = !focus || focus.has(n.id);
+        if (isolate && focus && !inF) return;
+        const r = (t.size + Math.min(n.deg, 14) * 0.7) / Math.sqrt(cam.z);
+        ctx.globalAlpha = inF ? 1 : 0.12;
+        if (P.glow && inF) { ctx.shadowColor = t.color; ctx.shadowBlur = (n.id === focusId || n.id === hoverId) ? 26 : 12; }
+        ctx.fillStyle = t.color;
+        ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, 7); ctx.fill();
+        ctx.shadowBlur = 0;
+        if (n.id === focusId) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2/cam.z; ctx.stroke(); }
+        if (P.labels && (inF || cam.z > 1.4) && (n.deg > 2 || cam.z > 0.9 || n.id === focusId || n.id === hoverId)) {
+            ctx.globalAlpha = inF ? 0.92 : 0.15;
+            ctx.fillStyle = '#d8e4d0';
+            ctx.font = `${Math.max(10, 12/cam.z)}px Outfit`;
+            ctx.textAlign = 'center';
+            ctx.fillText(n.id.replace('.md',''), n.x, n.y + r + 13/cam.z);
+        }
+    });
+    ctx.restore();
+}
+function tickLoop() { if (!mode3d) { tick(); draw(); } requestAnimationFrame(tickLoop); }
+
+// ===== INTERACTION =====
+let dragNode = null, panning = false, lastM = null;
+function toWorld(mx, my) { return { x: (mx - cv.width/2 - cam.x)/cam.z, y: (my - cv.height/2 - cam.y)/cam.z }; }
+function pick(mx, my) {
+    const p = toWorld(mx, my);
+    let best = null, bd = 1e9;
+    DATA.nodes.forEach(n => {
+        if (typeOff[n.type]) return;
+        const t = TYPES[n.type] || TYPES.topic;
+        const r = (t.size + Math.min(n.deg,14)*0.7)/Math.sqrt(cam.z) + 6;
+        const d = Math.hypot(n.x-p.x, n.y-p.y);
+        if (d < r && d < bd) { bd = d; best = n; }
+    });
+    return best;
+}
+cv.addEventListener('mousedown', e => {
+    const n = pick(e.offsetX, e.offsetY);
+    if (n) dragNode = n; else { panning = true; }
+    lastM = { x: e.offsetX, y: e.offsetY };
+});
+cv.addEventListener('mousemove', e => {
+    hoverId = null;
+    const n = pick(e.offsetX, e.offsetY);
+    if (n) { hoverId = n.id; cv.style.cursor = 'pointer'; } else cv.style.cursor = 'grab';
+    if (dragNode) { const p = toWorld(e.offsetX, e.offsetY); dragNode.x = p.x; dragNode.y = p.y; dragNode.vx = dragNode.vy = 0; }
+    else if (panning && lastM) { cam.x += e.offsetX-lastM.x; cam.y += e.offsetY-lastM.y; lastM = { x: e.offsetX, y: e.offsetY }; }
+});
+window.addEventListener('mouseup', e => {
+    if (dragNode && lastM && Math.hypot(e.offsetX-lastM.x, e.offsetY-lastM.y) < 5) {
+        if (e.shiftKey) { isolate = true; focusNode(dragNode.id); }
+        else { isolate = false; focusNode(dragNode.id); }
+    }
+    dragNode = null; panning = false;
+});
+cv.addEventListener('wheel', e => {
+    e.preventDefault();
+    const f = e.deltaY < 0 ? 1.1 : 0.9;
+    cam.z = Math.min(4, Math.max(0.15, cam.z * f));
+}, { passive: false });
+window.addEventListener('keydown', e => { if (e.key === 'Escape') { focusId = null; isolate = false; inspect(null); } });
+
+function focusNode(id) {
+    focusId = id;
+    const n = DATA.nodes.find(x => x.id === id);
+    if (n) { cam.x = -n.x * cam.z; cam.y = -n.y * cam.z; inspect(n); }
+}
+function inspect(n) {
+    const el = document.getElementById('inspector');
+    if (!n) { el.innerHTML = 'Click a node to inspect it. Shift-click to pin/isolate. Esc to clear.'; return; }
+    const t = TYPES[n.type] || TYPES.topic;
+    el.innerHTML = `<span class="itype">${t.label}</span><br><span class="iname">${n.id}</span><br>${n.note || ''}<br><span style="font-family:var(--mono);font-size:0.6rem;">${n.deg} connections</span>`;
+}
+function doSearch(q) {
+    if (!q) { focusId = null; isolate = false; return; }
+    q = q.toLowerCase();
+    const hit = DATA.nodes.find(n => n.id.toLowerCase().includes(q)) ||
+                DATA.nodes.find(n => (n.note||'').toLowerCase().includes(q));
+    if (hit) { isolate = false; focusNode(hit.id); }
+}
+function fitView() { cam = { x: 0, y: 0, z: Math.min(1, 600 / Math.sqrt(DATA.nodes.length) / 22) }; focusId = null; isolate = false; }
+function setTheme(t, el) {
+    P.theme = t;
+    document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('active'));
+    el.classList.add('active');
+}
+function resize() { cv.width = innerWidth; cv.height = innerHeight; }
+window.addEventListener('resize', resize);
+
+// ===== 3D MODE =====
+function toggle3D() {
+    mode3d = !mode3d;
+    document.getElementById('btn-3d').classList.toggle('active', mode3d);
+    document.getElementById('stage').style.display = mode3d ? 'none' : 'block';
+    document.getElementById('graph3d').style.display = mode3d ? 'block' : 'none';
+    if (mode3d && !graph3d) init3D();
+}
+function init3D() {
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/3d-force-graph@1.73.4/dist/3d-force-graph.min.js';
+    s.onload = () => {
+        graph3d = ForceGraph3D()(document.getElementById('graph3d'))
+            .backgroundColor('#070a07')
+            .graphData({
+                nodes: DATA.nodes.map(n => ({ id: n.id, type: n.type, note: n.note, deg: n.deg })),
+                links: DATA.links.map(l => ({ source: l.s.id, target: l.t.id }))
+            })
+            .nodeColor(n => (TYPES[n.type]||TYPES.topic).color)
+            .nodeVal(n => (TYPES[n.type]||TYPES.topic).size/2 + Math.min(n.deg,14)*0.4)
+            .nodeLabel(n => `<div style="font-family:Outfit;background:rgba(10,14,10,0.9);padding:6px 10px;border-radius:8px;border:1px solid rgba(118,185,0,0.4);color:#d8e4d0"><b style="color:#9dff00">${n.id}</b><br><span style="font-size:11px">${n.note||''}</span></div>`)
+            .linkColor(() => 'rgba(118,185,0,0.35)')
+            .linkDirectionalParticles(2)
+            .linkDirectionalParticleWidth(1.2)
+            .linkDirectionalParticleColor(() => '#9dff00')
+            .onNodeClick(n => { const f = DATA.nodes.find(x => x.id === n.id); if (f) inspect(f); });
+    };
+    document.body.appendChild(s);
+}
+
+loadData();
+</script>
+<script src="jarvis_dock.js"></script>
+<script src="jarvis_micfast.js"></script>
+<script src="jarvis_flowmode.js"></script>
+<script src="jarvis_ingest.js"></script>
+<script src="jarvis_ui_polish.js"></script>
+</body>
+</html>
